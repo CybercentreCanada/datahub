@@ -1,4 +1,4 @@
-namespace ca.gc.cyber.license
+namespace com.linkedin.license
 
 import com.linkedin.common.Urn
 import com.linkedin.common.Url

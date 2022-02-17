@@ -1,0 +1,20 @@
+namespace com.linkedin.license
+
+/**
+ * Related license information
+ */
+@Aspect = {
+   "name": "License"
+}
+record License {
+
+  /**
+   * The related license
+   */
+  license: LicenseAssociation
+
+  /**
+   * Audit stamp containing who reported the related business term
+   */
+  auditStamp: AuditStamp
+}
