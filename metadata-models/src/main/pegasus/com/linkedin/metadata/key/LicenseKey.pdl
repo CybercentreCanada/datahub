@@ -1,0 +1,23 @@
+namespace com.linkedin.metadata.key
+
+import com.linkedin.common.Urn
+
+/**
+ * Key for a LicenseKey
+ */
+@Aspect = {
+  "name": "LicenseKey"
+}
+record LicenseKey {
+
+  /**
+  * Short identifier specified by https://spdx.org/licenses/
+  */
+  @Searchable = {
+    "fieldType": "TEXT_PARTIAL",
+    "enableAutocomplete": true
+  }
+  id: string
+
+
+}

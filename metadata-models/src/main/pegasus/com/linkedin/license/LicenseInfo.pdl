@@ -1,0 +1,63 @@
+namespace com.linkedin.glossary
+
+import com.linkedin.common.CustomProperties
+import com.linkedin.common.DatasetUrn
+
+/**
+ * Properties associated with a License
+ * Mostly inspired from https://github.com/github/choosealicense.com
+ */
+@Aspect = {
+   "name": "LicenseInfo"
+}
+record LicenseInfo includes CustomProperties {
+
+    /**
+    * The license full name specified by https://spdx.org/licenses/
+    */
+    @Searchable = {}
+    name: string
+
+    /**
+     * A human-readable description of the license
+     */
+    description: string
+
+    /**
+    * Customary short name if applicable (e.g, GPLv3)
+    */
+    @Searchable = {}
+    nickname: optional string
+
+    /**
+    * Additional information about the licenses
+    */
+    note: optional string
+
+    /**
+    * Bulleted list of permission rules
+    */
+    permissions: array[string]
+
+    /**
+    * Bulleted list of condition rules
+    */
+    conditions: array[string]
+
+    /**
+    * Bulleted list of limitation rules
+    */
+    limitations: array[string]
+
+    /**
+    * Licensing of a dataset
+    */
+    @Relationship = {
+    "/*": {
+      "name": "AppliesTo",
+      "entityTypes": [ "dataset" ]
+    }
+    }
+    datasets: array[DatasetUrn] = [ ]
+
+}

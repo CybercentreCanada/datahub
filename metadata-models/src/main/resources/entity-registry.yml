@@ -99,3 +99,6 @@ entities:
     aspects:
       - assertionInfo
       - dataPlatformInstance
+  - name: license
+    aspects:
+      - licenseInfo

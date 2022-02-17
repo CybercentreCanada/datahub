@@ -1,0 +1,31 @@
+namespace ca.gc.cyber.license
+
+import com.linkedin.common.Urn
+import com.linkedin.common.Url
+
+/**
+ * Properties of an applied glossary term.
+ */
+record LicenseAssociation {
+ /**
+  * Urn of the applied License
+  */
+  @Searchable = {
+    "fieldName": "license",
+    "fieldType": "URN",
+    "addToFilters": true,
+    "filterNameOverride": "License"
+  }
+  urn: Urn
+
+  /**
+  * Reference link to the license file
+  */
+  @Searchable = {}
+  reference: Url
+
+  /**
+  * Reference link to the proof that the license is as is on a specfic date. Eg: a screenshot or PDF print-out
+  */
+  proof: optional Url
+}
