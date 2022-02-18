@@ -1,4 +1,4 @@
-namespace com.linkedin.glossary
+namespace com.linkedin.license
 
 import com.linkedin.common.CustomProperties
 import com.linkedin.common.DatasetUrn

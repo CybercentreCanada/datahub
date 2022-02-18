@@ -1,5 +1,7 @@
 namespace com.linkedin.license
 
+import com.linkedin.common.AuditStamp
+
 /**
  * Related license information
  */
