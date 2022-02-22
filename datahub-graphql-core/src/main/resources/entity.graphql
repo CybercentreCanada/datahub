@@ -30,6 +30,11 @@ type Query {
     dataset(urn: String!): Dataset
 
     """
+    Fetch a license by primary key (urn)
+    """
+    license(urn: String!): License
+
+    """
     Fetch a Dashboard by primary key (urn)
     """
     dashboard(urn: String!): Dashboard
@@ -139,6 +144,11 @@ type Mutation {
     Update the metadata about a particular Dashboard
     """
     updateDashboard(urn: String!, input: DashboardUpdateInput!): Dashboard
+
+    """
+    Update the metadata about a particular License
+    """
+    updateLicense(urn: String!, input: LicenseUpdateInput!): License
 
     """
     Update the metadata about a particular Data Flow (Pipeline)
@@ -347,6 +357,11 @@ enum EntityType {
     The Data Job (or Data Task) Entity
     """
     DATA_JOB
+
+    """
+    The License Entity
+    """
+    LICENSE
 
     """
     The Tag Entity
@@ -620,6 +635,11 @@ type Dataset implements EntityWithRelationships & Entity {
     The Domain associated with the Dataset
     """
     domain: Domain
+
+    """
+    The License associated with the Dataset
+    """
+    license: License
 
     """
     Statistics about how this Dataset is used
@@ -3002,6 +3022,72 @@ input InstitutionalMemoryMetadataUpdate {
     The time at which this metadata was created
     """
     createdAt: Long
+}
+
+"""
+A License Metadata Entity
+"""
+input LicenseUpdateInput {
+
+    name: String!
+
+    description: String!
+
+    nickname: String
+
+    note: String
+
+    permissions: [String!]
+
+    conditions: [String!]
+    
+    limitations: [String!]
+
+    ownership: OwnershipUpdate
+
+    datasets: [DatasetUpdateInput!]
+}
+
+"""
+A License Metadata Entity
+"""
+type License implements EntityWithRelationships & Entity {
+
+    urn: String!
+
+    """
+    A standard Entity Type
+    """
+    type: EntityType!
+
+    name: String!
+
+    description: String!
+
+    nickname: String
+
+    note: String
+
+    permissions: [String!]
+
+    conditions: [String!]
+    
+    limitations: [String!]
+
+    createdTime: Long!
+
+    modifiedTime: Long!
+
+    ownership: Ownership
+
+    datasets: [Dataset!]
+
+    customProperties: [StringMapEntry!]
+
+     """
+    Edges extending from this entity
+    """
+    relationships(input: RelationshipsInput!): EntityRelationshipsResult
 }
 
 """

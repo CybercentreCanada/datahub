@@ -296,6 +296,7 @@ enum EntityType {
     DATA_JOB
     CORP_USER
     CORP_GROUP
+    LICENSE
 }
 
 # Search Input

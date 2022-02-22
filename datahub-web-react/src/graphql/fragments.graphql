@@ -270,6 +270,27 @@ fragment dataJobFields on DataJob {
     }
 }
 
+fragment licenseFields on License {
+
+    urn
+    type
+    name
+    description
+    nickname
+    note
+    permissions
+    conditions
+    limitations
+
+    ownership {
+    ...ownershipFields
+    }
+    customProperties {
+        key
+        value
+    }
+}
+
 fragment dashboardFields on Dashboard {
     urn
     type
