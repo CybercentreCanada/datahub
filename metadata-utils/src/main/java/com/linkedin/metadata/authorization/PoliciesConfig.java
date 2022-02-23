@@ -179,6 +179,14 @@ public class PoliciesConfig {
       COMMON_ENTITY_PRIVILEGES
   );
 
+    // License Privileges
+    public static final ResourcePrivileges LICENSE_PRIVILEGES = ResourcePrivileges.of(
+        "license",
+        "Licenses",
+        "Licenses indexed by DataHub",
+        COMMON_ENTITY_PRIVILEGES
+    );
+
   // Data Flow Privileges
   public static final ResourcePrivileges DATA_FLOW_PRIVILEGES = ResourcePrivileges.of(
       "dataFlow",

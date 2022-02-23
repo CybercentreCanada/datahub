@@ -6,7 +6,7 @@ import com.linkedin.common.Urn
  * Key for a LicenseKey
  */
 @Aspect = {
-  "name": "LicenseKey"
+  "name": "licenseKey"
 }
 record LicenseKey {
 
@@ -18,6 +18,4 @@ record LicenseKey {
     "enableAutocomplete": true
   }
   id: string
-
-
 }

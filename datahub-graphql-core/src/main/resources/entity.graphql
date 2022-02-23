@@ -3053,8 +3053,8 @@ A License Metadata Entity
 """
 type License implements EntityWithRelationships & Entity {
 
+    id: String!
     urn: String!
-
     """
     A standard Entity Type
     """

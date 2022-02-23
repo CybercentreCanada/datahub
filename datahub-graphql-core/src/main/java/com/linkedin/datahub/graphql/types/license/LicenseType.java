@@ -3,7 +3,6 @@ package com.linkedin.datahub.graphql.types.license;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.linkedin.common.urn.CorpuserUrn;
-import com.linkedin.common.urn.LicenseUrn;
 import com.linkedin.common.urn.Urn;
 import com.linkedin.common.urn.UrnUtils;
 import com.linkedin.data.template.StringArray;
@@ -160,9 +159,9 @@ public class LicenseType implements SearchableEntityType<License>, BrowsableEnti
         return BrowsePathsMapper.map(result);
     }
 
-    private com.linkedin.common.urn.LicenseUrn getLicenseUrn(String urnStr) {
+    private com.linkedin.common.urn.Urn getLicenseUrn(String urnStr) {
         try {
-            return LicenseUrn.createFromString(urnStr);
+            return Urn.createFromString(urnStr);
         } catch (URISyntaxException e) {
             throw new RuntimeException(String.format("Failed to retrieve license with urn %s, invalid urn", urnStr));
         }
@@ -206,12 +205,6 @@ public class LicenseType implements SearchableEntityType<License>, BrowsableEnti
         List<String> specificPrivileges = new ArrayList<>();
         if (updateInput.getOwnership() != null) {
             specificPrivileges.add(PoliciesConfig.EDIT_ENTITY_OWNERS_PRIVILEGE.getType());
-        }
-        if (updateInput.getEditableProperties() != null) {
-            specificPrivileges.add(PoliciesConfig.EDIT_ENTITY_DOCS_PRIVILEGE.getType());
-        }
-        if (updateInput.getGlobalTags() != null) {
-            specificPrivileges.add(PoliciesConfig.EDIT_ENTITY_TAGS_PRIVILEGE.getType());
         }
         final ConjunctivePrivilegeGroup specificPrivilegeGroup = new ConjunctivePrivilegeGroup(specificPrivileges);
 
