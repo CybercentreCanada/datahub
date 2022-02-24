@@ -23,6 +23,7 @@ public class EntityTypeMapper {
           .put(EntityType.DATA_FLOW, "dataFlow")
           .put(EntityType.DATA_JOB, "dataJob")
           .put(EntityType.GLOSSARY_TERM, "glossaryTerm")
+          .put(EntityType.LICENSE, "license")
           .put(EntityType.MLMODEL, "mlModel")
           .put(EntityType.MLMODEL_GROUP, "mlModelGroup")
           .put(EntityType.MLFEATURE_TABLE, "mlFeatureTable")

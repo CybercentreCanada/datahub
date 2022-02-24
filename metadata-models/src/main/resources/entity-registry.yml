@@ -110,4 +110,5 @@ entities:
   - name: license
     keyAspect: licenseKey
     aspects:
+      - licenseInfo
       - ownership

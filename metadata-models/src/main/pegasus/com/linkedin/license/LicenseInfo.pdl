@@ -8,7 +8,7 @@ import com.linkedin.common.DatasetUrn
  * Mostly inspired from https://github.com/github/choosealicense.com
  */
 @Aspect = {
-   "name": "LicenseInfo"
+   "name": "licenseInfo"
 }
 record LicenseInfo includes CustomProperties {
 

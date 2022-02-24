@@ -18,7 +18,7 @@ record LicenseSnapshot {
   urn: Urn
 
   /**
-   * The list of metadata aspects associated with the dashboard. Depending on the use case, this can either be all, or a selection, of supported aspects.
+   * The list of metadata aspects associated with the license. Depending on the use case, this can either be all, or a selection, of supported aspects.
    */
   aspects: array[LicenseAspect]
 }

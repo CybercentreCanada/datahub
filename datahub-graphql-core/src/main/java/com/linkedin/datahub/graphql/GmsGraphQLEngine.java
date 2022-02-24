@@ -128,6 +128,7 @@ import com.linkedin.datahub.graphql.types.dataset.DatasetType;
 import com.linkedin.datahub.graphql.types.dataset.mappers.DatasetProfileMapper;
 import com.linkedin.datahub.graphql.types.domain.DomainType;
 import com.linkedin.datahub.graphql.types.glossary.GlossaryTermType;
+import com.linkedin.datahub.graphql.types.license.LicenseType;
 import com.linkedin.datahub.graphql.types.mlmodel.MLFeatureTableType;
 import com.linkedin.datahub.graphql.types.mlmodel.MLFeatureType;
 import com.linkedin.datahub.graphql.types.mlmodel.MLModelGroupType;
@@ -150,6 +151,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -206,6 +208,7 @@ public class GmsGraphQLEngine {
     private final UsageType usageType;
     private final ContainerType containerType;
     private final DomainType domainType;
+    private final LicenseType licenseType;
 
 
     /**
@@ -296,6 +299,7 @@ public class GmsGraphQLEngine {
         this.usageType = new UsageType(this.usageClient);
         this.containerType = new ContainerType(entityClient);
         this.domainType = new DomainType(entityClient);
+        this.licenseType = new LicenseType(entityClient);
 
         // Init Lists
         this.entityTypes = ImmutableList.of(
@@ -315,7 +319,8 @@ public class GmsGraphQLEngine {
             dataJobType,
             glossaryTermType,
             containerType,
-            domainType
+            domainType,
+            licenseType
         );
         this.loadableTypes = new ArrayList<>(entityTypes);
         this.ownerTypes = ImmutableList.of(corpUserType, corpGroupType);
@@ -447,6 +452,7 @@ public class GmsGraphQLEngine {
         configureContainerResolvers(builder);
         configureGlossaryTermResolvers(builder);
         configureDomainResolvers(builder);
+        configureLicenseResolvers(builder);
     }
 
     public GraphQLEngine.Builder builder() {
@@ -540,6 +546,9 @@ public class GmsGraphQLEngine {
                             (env) -> env.getArgument(URN_FIELD_NAME))))
             .dataFetcher("domain",
                 new LoadableTypeResolver<>(domainType,
+                    (env) -> env.getArgument(URN_FIELD_NAME)))
+            .dataFetcher("license",
+                new LoadableTypeResolver<>(licenseType,
                     (env) -> env.getArgument(URN_FIELD_NAME)))
             .dataFetcher("mlFeatureTable", new AuthenticatedResolver<>(
                     new LoadableTypeResolver<>(mlFeatureTableType,
@@ -702,6 +711,13 @@ public class GmsGraphQLEngine {
                         (env) -> {
                             final Dataset dataset = env.getSource();
                             return dataset.getContainer() != null ? dataset.getContainer().getUrn() : null;
+                        })
+                )
+                .dataFetcher("license",
+                    new LoadableTypeResolver<>(licenseType,
+                        (env) -> {
+                            final Dataset dataset = env.getSource();
+                            return dataset.getLicense() != null ? dataset.getLicense().getUrn() : null;
                         })
                 )
                 .dataFetcher("datasetProfiles", new AuthenticatedResolver<>(
@@ -1096,6 +1112,14 @@ public class GmsGraphQLEngine {
     private void configureDomainResolvers(final RuntimeWiring.Builder builder) {
         builder.type("Domain", typeWiring -> typeWiring
             .dataFetcher("entities", new DomainEntitiesResolver(this.entityClient))
+            .dataFetcher("relationships", new AuthenticatedResolver<>(
+                new EntityRelationshipsResultResolver(graphClient)
+            ))
+        );
+    }
+
+    private void configureLicenseResolvers(final RuntimeWiring.Builder builder) {
+        builder.type("License", typeWiring -> typeWiring
             .dataFetcher("relationships", new AuthenticatedResolver<>(
                 new EntityRelationshipsResultResolver(graphClient)
             ))

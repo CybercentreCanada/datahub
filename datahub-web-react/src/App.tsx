@@ -30,6 +30,7 @@ import { MLModelEntity } from './app/entity/mlModel/MLModelEntity';
 import { MLModelGroupEntity } from './app/entity/mlModelGroup/MLModelGroupEntity';
 import { DomainEntity } from './app/entity/domain/DomainEntity';
 import { ContainerEntity } from './app/entity/container/ContainerEntity';
+import { LicenseEntity } from './app/entity/license/LicenseEntity';
 
 /*
     Construct Apollo Client
@@ -97,6 +98,7 @@ const App: React.VFC = () => {
         register.register(new MLModelGroupEntity());
         register.register(new DomainEntity());
         register.register(new ContainerEntity());
+        register.register(new LicenseEntity());
         return register;
     }, []);
 

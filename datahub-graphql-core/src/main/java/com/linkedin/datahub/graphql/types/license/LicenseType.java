@@ -39,6 +39,7 @@ import com.linkedin.metadata.search.SearchResult;
 import com.linkedin.mxe.MetadataChangeProposal;
 import com.linkedin.r2.RemoteInvocationException;
 import graphql.execution.DataFetcherResult;
+
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,11 +61,9 @@ public class LicenseType implements SearchableEntityType<License>, BrowsableEnti
     private static final Set<String> ASPECTS_TO_RESOLVE = ImmutableSet.of(
         LICENSE_KEY_ASPECT_NAME,
         LICENSE_INFO_ASPECT_NAME,
-        OWNERSHIP_ASPECT_NAME,
-        GLOSSARY_TERMS_ASPECT_NAME,
-        STATUS_ASPECT_NAME
+        OWNERSHIP_ASPECT_NAME
     );
-    private static final Set<String> FACET_FIELDS = ImmutableSet.of("access", "name");
+    private static final Set<String> FACET_FIELDS = ImmutableSet.of("");
 
     private final EntityClient _entityClient;
 

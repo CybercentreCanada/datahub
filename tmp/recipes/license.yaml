@@ -1,0 +1,11 @@
+source:
+  type: file
+  config:
+    # Coordinates
+    filename: licenses/mit.json
+
+sink:
+  type: "datahub-rest"
+  config:
+    server: "http://localhost:8080"
+    #server: "http://datahub-datahub-gms.datahub.svc.cluster.local:8080"

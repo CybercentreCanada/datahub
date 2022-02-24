@@ -1,0 +1,22 @@
+[
+    {
+        "auditHeader": null,
+        "proposedSnapshot": {
+            "com.linkedin.pegasus2avro.metadata.snapshot.LicenseSnapshot": {
+                "urn": "urn:li:license:mit",
+                "aspects": [
+                    {
+                        "com.linkedin.pegasus2avro.license.LicenseInfo": {
+                            "name": "MIT License",
+                            "description": "A short and simple permissive license with conditions only requiring preservation of copyright and license notices. Licensed works, modifications, and larger works may be distributed under different terms and without source code.",
+                            "nickname": "MIT",
+                            "permissions": ["commercial-use", "modifications", "distribution", "private-use"],
+                            "conditions": ["include-copyright"],
+                            "limitations": ["liability", "warranty"]
+                        }
+                    }
+                ]
+            }
+        }
+    }
+]

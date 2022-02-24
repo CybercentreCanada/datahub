@@ -20,6 +20,7 @@ import com.linkedin.datahub.graphql.generated.MLFeatureTable;
 import com.linkedin.datahub.graphql.generated.MLPrimaryKey;
 import com.linkedin.datahub.graphql.generated.MLModel;
 import com.linkedin.datahub.graphql.generated.MLModelGroup;
+import com.linkedin.datahub.graphql.generated.License;
 import com.linkedin.datahub.graphql.types.mappers.ModelMapper;
 import javax.annotation.Nonnull;
 
@@ -118,6 +119,11 @@ public class UrnToEntityMapper implements ModelMapper<com.linkedin.common.urn.Ur
       partialEntity = new Domain();
       ((Domain) partialEntity).setUrn(input.toString());
       ((Domain) partialEntity).setType(EntityType.DOMAIN);
+    }
+    if (input.getEntityType().equals("license")) {
+      partialEntity = new License();
+      ((License) partialEntity).setUrn(input.toString());
+      ((License) partialEntity).setType(EntityType.LICENSE);
     }
     return partialEntity;
   }
