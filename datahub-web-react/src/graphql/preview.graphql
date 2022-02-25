@@ -258,4 +258,15 @@ fragment entityPreview on Entity {
     ... on Container {
         ...entityContainer
     }
+    ... on License {
+        urn
+        id
+        properties {
+            name
+            description
+        }
+        ownership {
+            ...ownershipFields
+        }
+    }
 }

@@ -323,6 +323,17 @@ fragment searchResults on SearchResults {
                 name
                 description
             }
+            ... on License {
+                urn
+                id
+                properties {
+                    name
+                    description
+                }
+                ownership {
+                    ...ownershipFields
+                }
+            }
         }
         matchedFields {
             name

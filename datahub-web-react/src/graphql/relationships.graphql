@@ -104,6 +104,17 @@ fragment relationshipFields on Entity {
         }
         ...mlModelRelationshipsLeaf
     }
+    ... on License {
+        urn
+        id
+        properties {
+            name
+            description
+        }
+        ownership {
+            ...ownershipFields
+        }
+    }
 }
 
 fragment fullRelationshipResults on EntityRelationshipsResult {
