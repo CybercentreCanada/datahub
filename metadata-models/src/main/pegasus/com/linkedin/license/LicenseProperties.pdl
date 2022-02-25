@@ -1,22 +1,26 @@
 namespace com.linkedin.license
 
 import com.linkedin.common.CustomProperties
-import com.linkedin.common.DatasetUrn
 
 /**
  * Properties associated with a License
  * Mostly inspired from https://github.com/github/choosealicense.com
  */
 @Aspect = {
-   "name": "licenseInfo"
+   "name": "licenseProperties"
 }
-record LicenseInfo includes CustomProperties {
+record LicenseProperties includes CustomProperties {
 
     /**
     * The license full name specified by https://spdx.org/licenses/
     */
     @Searchable = {}
     name: string
+
+    /**
+    * The license id specified by https://spdx.org/licenses/
+    */
+    id: string
 
     /**
      * A human-readable description of the license
@@ -48,16 +52,4 @@ record LicenseInfo includes CustomProperties {
     * Bulleted list of limitation rules
     */
     limitations: array[string]
-
-    /**
-    * Licensing of a dataset
-    */
-    @Relationship = {
-    "/*": {
-      "name": "AppliesTo",
-      "entityTypes": [ "dataset" ]
-    }
-    }
-    datasets: array[DatasetUrn] = [ ]
-
 }

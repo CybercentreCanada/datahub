@@ -78,10 +78,9 @@ export class LicenseEntity implements Entity<License> {
     );
 
     getOverridePropertiesFromEntity = (license?: License | null): GenericEntityProperties => {
-        // TODO: Get rid of this once we have correctly formed platform coming back.
-        const name = license?.name;
-        const description = license?.description;
-        const customProperties = license?.customProperties;
+        const name = license?.properties?.name;
+        const description = license?.properties?.description || '';
+        const customProperties = license?.properties?.customProperties;
         return {
             name,
             properties: {
@@ -100,14 +99,14 @@ export class LicenseEntity implements Entity<License> {
             <LicensePreview
                 urn={data?.urn}
                 name={this.displayName(data)}
-                description={data?.description || ''}
+                description={data?.properties?.description || ''}
                 owners={data?.ownership?.owners}
             />
         );
     };
 
     displayName = (data: License) => {
-        return data.name;
+        return data.properties?.name || '';
     };
 
     getGenericEntityProperties = (data: License) => {

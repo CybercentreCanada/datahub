@@ -78,7 +78,7 @@ public class Constants {
 
   //License
   public static final String LICENSE_KEY_ASPECT_NAME = "licenseKey";
-  public static final String LICENSE_INFO_ASPECT_NAME = "licenseInfo";
+  public static final String LICENSE_INFO_ASPECT_NAME = "licenseProperties";
 
   // Chart
   public static final String CHART_KEY_ASPECT_NAME = "chartKey";

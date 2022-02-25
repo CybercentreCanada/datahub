@@ -1,30 +1,21 @@
 package com.linkedin.datahub.graphql.types.license;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.linkedin.common.urn.CorpuserUrn;
 import com.linkedin.common.urn.Urn;
 import com.linkedin.common.urn.UrnUtils;
 import com.linkedin.data.template.StringArray;
 import com.linkedin.datahub.graphql.QueryContext;
-import com.linkedin.datahub.graphql.authorization.AuthorizationUtils;
-import com.linkedin.datahub.graphql.authorization.ConjunctivePrivilegeGroup;
-import com.linkedin.datahub.graphql.authorization.DisjunctivePrivilegeGroup;
-import com.linkedin.datahub.graphql.exception.AuthorizationException;
 import com.linkedin.datahub.graphql.generated.AutoCompleteResults;
 import com.linkedin.datahub.graphql.generated.BrowsePath;
 import com.linkedin.datahub.graphql.generated.BrowseResults;
 import com.linkedin.datahub.graphql.generated.License;
-import com.linkedin.datahub.graphql.generated.LicenseUpdateInput;
 import com.linkedin.datahub.graphql.generated.EntityType;
 import com.linkedin.datahub.graphql.generated.FacetFilterInput;
 import com.linkedin.datahub.graphql.generated.SearchResults;
 import com.linkedin.datahub.graphql.resolvers.ResolverUtils;
 import com.linkedin.datahub.graphql.types.BrowsableEntityType;
-import com.linkedin.datahub.graphql.types.MutableType;
 import com.linkedin.datahub.graphql.types.SearchableEntityType;
 import com.linkedin.datahub.graphql.types.license.mappers.LicenseMapper;
-import com.linkedin.datahub.graphql.types.license.mappers.LicenseUpdateInputMapper;
 import com.linkedin.datahub.graphql.types.mappers.AutoCompleteResultsMapper;
 import com.linkedin.datahub.graphql.types.mappers.BrowsePathsMapper;
 import com.linkedin.datahub.graphql.types.mappers.BrowseResultMapper;
@@ -32,17 +23,13 @@ import com.linkedin.datahub.graphql.types.mappers.UrnSearchResultsMapper;
 import com.linkedin.entity.EntityResponse;
 import com.linkedin.entity.client.EntityClient;
 import com.linkedin.metadata.Constants;
-import com.linkedin.metadata.authorization.PoliciesConfig;
 import com.linkedin.metadata.browse.BrowseResult;
 import com.linkedin.metadata.query.AutoCompleteResult;
 import com.linkedin.metadata.search.SearchResult;
-import com.linkedin.mxe.MetadataChangeProposal;
-import com.linkedin.r2.RemoteInvocationException;
 import graphql.execution.DataFetcherResult;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -55,8 +42,7 @@ import static com.linkedin.datahub.graphql.Constants.*;
 import static com.linkedin.metadata.Constants.*;
 
 
-public class LicenseType implements SearchableEntityType<License>, BrowsableEntityType<License>,
-                                      MutableType<LicenseUpdateInput, License> {
+public class LicenseType implements SearchableEntityType<License>, BrowsableEntityType<License> {
 
     private static final Set<String> ASPECTS_TO_RESOLVE = ImmutableSet.of(
         LICENSE_KEY_ASPECT_NAME,
@@ -69,11 +55,6 @@ public class LicenseType implements SearchableEntityType<License>, BrowsableEnti
 
     public LicenseType(final EntityClient entityClient) {
         _entityClient = entityClient;
-    }
-
-    @Override
-    public Class<LicenseUpdateInput> inputClass() {
-        return LicenseUpdateInput.class;
     }
 
     @Override
@@ -164,53 +145,5 @@ public class LicenseType implements SearchableEntityType<License>, BrowsableEnti
         } catch (URISyntaxException e) {
             throw new RuntimeException(String.format("Failed to retrieve license with urn %s, invalid urn", urnStr));
         }
-    }
-
-    @Override
-    public License update(@Nonnull String urn, @Nonnull LicenseUpdateInput input, @Nonnull QueryContext context) throws Exception {
-        if (isAuthorized(urn, input, context)) {
-            final CorpuserUrn actor = CorpuserUrn.createFromString(context.getAuthentication().getActor().toUrnStr());
-            final Collection<MetadataChangeProposal> proposals = LicenseUpdateInputMapper.map(input, actor);
-            proposals.forEach(proposal -> proposal.setEntityUrn(UrnUtils.getUrn(urn)));
-
-            try {
-                _entityClient.batchIngestProposals(proposals, context.getAuthentication());
-            } catch (RemoteInvocationException e) {
-                throw new RuntimeException(String.format("Failed to write entity with urn %s", urn), e);
-            }
-
-            return load(urn, context).getData();
-        }
-        throw new AuthorizationException("Unauthorized to perform this action. Please contact your DataHub administrator.");
-    }
-
-    private boolean isAuthorized(@Nonnull String urn, @Nonnull LicenseUpdateInput update, @Nonnull QueryContext context) {
-        // Decide whether the current principal should be allowed to update the Dataset.
-        final DisjunctivePrivilegeGroup orPrivilegeGroups = getAuthorizedPrivileges(update);
-        return AuthorizationUtils.isAuthorized(
-            context.getAuthorizer(),
-            context.getAuthentication().getActor().toUrnStr(),
-            PoliciesConfig.LICENSE_PRIVILEGES.getResourceType(),
-            urn,
-            orPrivilegeGroups);
-    }
-
-    private DisjunctivePrivilegeGroup getAuthorizedPrivileges(final LicenseUpdateInput updateInput) {
-
-        final ConjunctivePrivilegeGroup allPrivilegesGroup = new ConjunctivePrivilegeGroup(ImmutableList.of(
-            PoliciesConfig.EDIT_ENTITY_PRIVILEGE.getType()
-        ));
-
-        List<String> specificPrivileges = new ArrayList<>();
-        if (updateInput.getOwnership() != null) {
-            specificPrivileges.add(PoliciesConfig.EDIT_ENTITY_OWNERS_PRIVILEGE.getType());
-        }
-        final ConjunctivePrivilegeGroup specificPrivilegeGroup = new ConjunctivePrivilegeGroup(specificPrivileges);
-
-        // If you either have all entity privileges, or have the specific privileges required, you are authorized.
-        return new DisjunctivePrivilegeGroup(ImmutableList.of(
-            allPrivilegesGroup,
-            specificPrivilegeGroup
-        ));
     }
 }

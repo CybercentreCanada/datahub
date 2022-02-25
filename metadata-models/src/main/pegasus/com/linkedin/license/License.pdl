@@ -1,6 +1,7 @@
 namespace com.linkedin.license
 
 import com.linkedin.common.AuditStamp
+import com.linkedin.common.DatasetUrn
 
 /**
  * Related license information
@@ -19,4 +20,15 @@ record License {
    * Audit stamp containing who reported the related business term
    */
   auditStamp: AuditStamp
+
+  /**
+  * Licensing of a dataset
+  */
+  @Relationship = {
+  "/*": {
+      "name": "AppliesTo",
+      "entityTypes": [ "dataset" ]
+    }
+  }
+  datasets: array[DatasetUrn] = [ ]
 }

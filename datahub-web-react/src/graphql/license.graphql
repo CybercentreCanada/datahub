@@ -6,9 +6,3 @@ query getLicense($urn: String!) {
         }
     }
 }
-
-mutation updateLicense($urn: String!, $input: LicenseUpdateInput!) {
-    updateLicense(urn: $urn, input: $input) {
-        urn
-    }
-}

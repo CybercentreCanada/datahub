@@ -146,11 +146,6 @@ type Mutation {
     updateDashboard(urn: String!, input: DashboardUpdateInput!): Dashboard
 
     """
-    Update the metadata about a particular License
-    """
-    updateLicense(urn: String!, input: LicenseUpdateInput!): License
-
-    """
     Update the metadata about a particular Data Flow (Pipeline)
     """
     updateDataFlow(urn: String!, input: DataFlowUpdateInput!): DataFlow
@@ -3025,44 +3020,13 @@ input InstitutionalMemoryMetadataUpdate {
 }
 
 """
-A License Metadata Entity
+Additional read only properties about a Glossary Term
 """
-input LicenseUpdateInput {
+type LicenseProperties {
 
     name: String!
 
-    description: String!
-
-    nickname: String
-
-    note: String
-
-    permissions: [String!]
-
-    conditions: [String!]
-    
-    limitations: [String!]
-
-    ownership: OwnershipUpdate
-
-    datasets: [DatasetUpdateInput!]
-}
-
-"""
-A License Metadata Entity
-"""
-type License implements EntityWithRelationships & Entity {
-
-    id: String!
-    urn: String!
-    """
-    A standard Entity Type
-    """
-    type: EntityType!
-
-    name: String!
-
-    description: String!
+    description: String
 
     nickname: String
 
@@ -3078,13 +3042,40 @@ type License implements EntityWithRelationships & Entity {
 
     modifiedTime: Long!
 
+    customProperties: [StringMapEntry!]
+}
+
+"""
+A License Metadata Entity
+"""
+type License implements EntityWithRelationships & Entity {
+
+    """
+    The primary key of the license
+    """
+    urn: String!
+
+    """
+    The license id specified by https://spdx.org/licenses/
+    """
+    id: String!
+
+    """
+    A standard Entity Type
+    """
+    type: EntityType!
+
+    """
+    Ownership metadata of the license
+    """
     ownership: Ownership
 
-    datasets: [Dataset!]
+    """
+    Additional properties associated with the License
+    """
+    properties: LicenseProperties
 
-    customProperties: [StringMapEntry!]
-
-     """
+    """
     Edges extending from this entity
     """
     relationships(input: RelationshipsInput!): EntityRelationshipsResult

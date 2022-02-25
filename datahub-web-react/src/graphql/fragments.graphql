@@ -270,10 +270,7 @@ fragment dataJobFields on DataJob {
     }
 }
 
-fragment licenseFields on License {
-
-    urn
-    type
+fragment licensePropertiesFields on LicenseProperties {
     name
     description
     nickname
@@ -281,13 +278,20 @@ fragment licenseFields on License {
     permissions
     conditions
     limitations
-
-    ownership {
-    ...ownershipFields
-    }
     customProperties {
         key
         value
+    }
+}
+
+fragment licenseFields on License {
+    urn
+    type
+    ownership {
+    ...ownershipFields
+    }
+    properties {
+        ...licensePropertiesFields
     }
 }
 

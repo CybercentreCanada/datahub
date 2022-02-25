@@ -9,6 +9,7 @@ import com.linkedin.datahub.graphql.types.common.mappers.util.MappingHelper;
 import com.linkedin.datahub.graphql.types.mappers.ModelMapper;
 import com.linkedin.entity.EntityResponse;
 import com.linkedin.entity.EnvelopedAspectMap;
+import com.linkedin.license.LicenseProperties;
 import com.linkedin.metadata.key.LicenseKey;
 import javax.annotation.Nonnull;
 
@@ -31,6 +32,8 @@ public class LicenseMapper implements ModelMapper<EntityResponse, License> {
         EnvelopedAspectMap aspectMap = entityResponse.getAspects();
         MappingHelper<License> mappingHelper = new MappingHelper<>(aspectMap, result);
         mappingHelper.mapToResult(Constants.LICENSE_KEY_ASPECT_NAME, this::mapLicenseKey);
+        mappingHelper.mapToResult(Constants.LICENSE_INFO_ASPECT_NAME, (license, dataMap) ->
+            license.setProperties(LicensePropertiesMapper.map(new LicenseProperties(dataMap))));
         mappingHelper.mapToResult(Constants.OWNERSHIP_ASPECT_NAME, (license, dataMap) ->
             license.setOwnership(OwnershipMapper.map(new Ownership(dataMap))));
 

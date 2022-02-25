@@ -36,6 +36,9 @@ query getBrowseResults($input: BrowseInput!) {
                 domain {
                     ...entityDomain
                 }
+                license {
+                    ...licenseFields
+                }
             }
             ... on Dashboard {
                 urn
@@ -195,6 +198,17 @@ query getBrowseResults($input: BrowseInput!) {
                 }
                 platform {
                     ...platformFields
+                }
+            }
+            ... on License {
+                urn
+                id
+                properties {
+                    name
+                    description
+                }
+                ownership {
+                    ...ownershipFields
                 }
             }
         }
