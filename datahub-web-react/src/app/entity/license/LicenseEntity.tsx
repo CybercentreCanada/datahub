@@ -7,11 +7,13 @@ import { EntityProfile } from '../shared/containers/profile/EntityProfile';
 import { SidebarOwnerSection } from '../shared/containers/profile/sidebar/Ownership/SidebarOwnerSection';
 import { SidebarAboutSection } from '../shared/containers/profile/sidebar/SidebarAboutSection';
 import { SidebarTagsSection } from '../shared/containers/profile/sidebar/SidebarTagsSection';
+// import { DocumentationTab } from '../shared/tabs/Documentation/DocumentationTab';
 import { PropertiesTab } from '../shared/tabs/Properties/PropertiesTab';
 import { GenericEntityProperties } from '../shared/types';
 import { LicensePreview } from './preview/LicensePreview';
 import { getDataForEntityType } from '../shared/containers/profile/utils';
 import { SidebarDomainSection } from '../shared/containers/profile/sidebar/Domain/SidebarDomainSection';
+import { LicenseOverview } from './profile/LicenseOverview';
 
 /**
  * Definition of the DataHub License entity.
@@ -51,6 +53,10 @@ export class LicenseEntity implements Entity<License> {
             useEntityQuery={useGetLicenseQuery}
             getOverrideProperties={this.getOverridePropertiesFromEntity}
             tabs={[
+                {
+                    name: 'Overview',
+                    component: LicenseOverview,
+                },
                 {
                     name: 'Properties',
                     component: PropertiesTab,
