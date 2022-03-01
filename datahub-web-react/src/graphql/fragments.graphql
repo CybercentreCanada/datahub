@@ -275,9 +275,18 @@ fragment licensePropertiesFields on LicenseProperties {
     description
     nickname
     note
-    permissions
-    conditions
-    limitations
+    permissions {
+        key
+        value
+    }
+    conditions {
+        key
+        value
+    }
+    limitations {
+        key
+        value
+    }
     customProperties {
         key
         value

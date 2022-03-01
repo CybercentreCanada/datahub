@@ -3019,6 +3019,11 @@ input InstitutionalMemoryMetadataUpdate {
     createdAt: Long
 }
 
+type UsabilityItem {
+    value: String!
+    description: String
+}
+
 """
 Additional read only properties about a Glossary Term
 """
@@ -3032,11 +3037,11 @@ type LicenseProperties {
 
     note: String
 
-    permissions: [String!]
+    permissions: [StringMapEntry!]
 
-    conditions: [String!]
+    conditions: [StringMapEntry!]
     
-    limitations: [String!]
+    limitations: [StringMapEntry!]
 
     createdTime: Long!
 

@@ -25,9 +25,9 @@ public class LicensePropertiesMapper implements ModelMapper<com.linkedin.license
         
         licensePropertiesResult.setName(licenseProperties.getName());
         licensePropertiesResult.setDescription(licenseProperties.getDescription());
-        licensePropertiesResult.setPermissions(licenseProperties.getPermissions());
-        licensePropertiesResult.setConditions(licenseProperties.getConditions());
-        licensePropertiesResult.setLimitations(licenseProperties.getLimitations());
+        licensePropertiesResult.setPermissions(StringMapMapper.map(licenseProperties.getPermissions()));
+        licensePropertiesResult.setConditions(StringMapMapper.map(licenseProperties.getConditions()));
+        licensePropertiesResult.setLimitations(StringMapMapper.map(licenseProperties.getLimitations()));
 
         if (licenseProperties.hasNickname()) {
             licensePropertiesResult.setNickname(licenseProperties.getNickname());

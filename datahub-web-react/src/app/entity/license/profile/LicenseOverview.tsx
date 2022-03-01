@@ -2,9 +2,9 @@ import { Col, List, Row, Typography } from 'antd';
 import styled from 'styled-components';
 import React from 'react';
 import { CheckCircleOutlined, WarningOutlined, InfoCircleOutlined, AudioOutlined } from '@ant-design/icons';
-import { Maybe } from 'graphql/jsutils/Maybe';
 import { useEntityData } from '../../shared/EntityContext';
 import { useGetLicenseQuery } from '../../../../graphql/license.generated';
+import { StringMapEntry } from '../../../../types.generated';
 
 const Section = styled.div`
     padding: 16px 20px;
@@ -30,20 +30,16 @@ const getIcon = (icon: IconStyleType) => {
     }
 };
 
-const makeList = (items: Maybe<string[]>, icon: IconStyleType) => {
+const makeList = (items: any, icon: IconStyleType) => {
     const listItems = items || [];
     return (
         <List
             itemLayout="horizontal"
             bordered={false}
             dataSource={listItems}
-            renderItem={(item: string) => (
+            renderItem={(item: StringMapEntry) => (
                 <List.Item style={{ borderBottom: 'none' }}>
-                    <List.Item.Meta
-                        avatar={getIcon(icon)}
-                        title={item}
-                        description="The licensed material and derivatives may be used for commercial purposes."
-                    />
+                    <List.Item.Meta avatar={getIcon(icon)} title={item.key} description={item.value} />
                 </List.Item>
             )}
         />

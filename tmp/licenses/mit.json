@@ -6,15 +6,34 @@
                 "urn": "urn:li:license:mit",
                 "aspects": [
                     {
-                        "com.linkedin.pegasus2avro.license.LicenseInfo": {
+                        "com.linkedin.pegasus2avro.license.LicenseProperties": {
                             "name": "MIT License",
                             "description": "A short and simple permissive license with conditions only requiring preservation of copyright and license notices. Licensed works, modifications, and larger works may be distributed under different terms and without source code.",
                             "nickname": "MIT",
-                            "permissions": ["commercial-use", "modifications", "distribution", "private-use"],
-                            "conditions": ["include-copyright"],
-                            "limitations": ["liability", "warranty"]
+                            "id": "mit",
+                            "permissions": {
+                                "Commercial Use": "The licensed material and derivatives may be used for commercial purposes.",
+                                "Private Use":  "The licensed material may be used and modified in private.",
+                                "Distribution": "The licensed material may be distributed.",
+                                "Modifications": "The licensed material may be modified."
+                            },
+                            "conditions": {
+                                "License and copyright notice": "A copy of the license and copyright notice must be included with the licensed material."
+                            },
+                            "limitations": {
+                                "Liability": "This license includes a limitation of liability.",
+                                "Warranty": "This license explicitly states that it does NOT provide any warranty."
+                            }
                         }
-                    }
+                    },
+                    {
+                        "com.linkedin.pegasus2avro.common.Ownership": {
+                          "owners": [{
+                            "owner": "urn:li:corpuser:datahub",
+                            "type": "DATAOWNER"
+                          }]
+                        }
+                      }
                 ]
             }
         }

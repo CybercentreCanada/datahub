@@ -41,15 +41,15 @@ record LicenseProperties includes CustomProperties {
     /**
     * Bulleted list of permission rules
     */
-    permissions: array[string]
+    permissions: map[string, string] = { }
 
     /**
     * Bulleted list of condition rules
     */
-    conditions: array[string]
+    conditions: map[string, string] = { }
 
     /**
     * Bulleted list of limitation rules
     */
-    limitations: array[string]
+    limitations: map[string, string] = { }
 }
