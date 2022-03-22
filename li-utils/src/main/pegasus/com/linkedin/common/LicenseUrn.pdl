@@ -1,0 +1,24 @@
+namespace com.linkedin.common
+
+/**
+ * Corporate user's AD/LDAP login
+ */
+@java.class = "com.linkedin.common.urn.LicenseUrn"
+@validate.`com.linkedin.common.validator.TypedUrnValidator` = {
+  "accessible" : true,
+  "owningTeam" : "urn:li:internalTeam:security",
+  "entityType" : "license",
+  "constructable" : true,
+  "namespace" : "li",
+  "name" : "License",
+  "doc" : "License associated with data",
+  "owners" : [ "urn:li:corpuser:datahub" ],
+  "fields" : [ {
+    "name" : "id",
+    "doc" : "SPX short id according to https://spdx.org/licenses/",
+    "type" : "string",
+    "maxLength" : 20
+  } ],
+  "maxLength" : 20
+}
+typeref LicenseUrn = string

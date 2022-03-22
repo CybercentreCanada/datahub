@@ -21,6 +21,7 @@ import com.linkedin.datahub.graphql.types.common.mappers.StatusMapper;
 import com.linkedin.datahub.graphql.types.common.mappers.StringMapMapper;
 import com.linkedin.datahub.graphql.types.common.mappers.util.MappingHelper;
 import com.linkedin.datahub.graphql.types.glossary.mappers.GlossaryTermsMapper;
+import com.linkedin.datahub.graphql.types.license.mappers.LicenseAssociationMapper;
 import com.linkedin.datahub.graphql.types.mappers.ModelMapper;
 import com.linkedin.datahub.graphql.types.tag.mappers.GlobalTagsMapper;
 import com.linkedin.dataset.DatasetDeprecation;
@@ -84,6 +85,8 @@ public class DatasetMapper implements ModelMapper<EntityResponse, Dataset> {
         mappingHelper.mapToResult(DOMAINS_ASPECT_NAME, this::mapDomains);
         mappingHelper.mapToResult(DEPRECATION_ASPECT_NAME, (dataset, dataMap) ->
             dataset.setDeprecation(DeprecationMapper.map(new Deprecation(dataMap))));
+        mappingHelper.mapToResult(LICENSE_ASPECT_NAME, (dataset, dataMap) ->
+            dataset.setLicensing(LicenseAssociationMapper.map(new com.linkedin.license.LicenseAssociation(dataMap))));
 
         return mappingHelper.getResult();
     }

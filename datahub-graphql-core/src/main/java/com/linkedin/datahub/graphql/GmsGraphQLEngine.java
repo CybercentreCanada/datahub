@@ -790,12 +790,8 @@ public class GmsGraphQLEngine {
                             return dataset.getContainer() != null ? dataset.getContainer().getUrn() : null;
                         })
                 )
-                .dataFetcher("license",
-                    new LoadableTypeResolver<>(licenseType,
-                        (env) -> {
-                            final Dataset dataset = env.getSource();
-                            return dataset.getLicense() != null ? dataset.getLicense().getUrn() : null;
-                        })
+                .dataFetcher("licensing",
+                    new AspectResolver()
                 )
                 .dataFetcher("datasetProfiles", new AuthenticatedResolver<>(
                     new TimeSeriesAspectResolver(
@@ -1222,7 +1218,11 @@ public class GmsGraphQLEngine {
     private void configureLicenseResolvers(final RuntimeWiring.Builder builder) {
         builder.type("License", typeWiring -> typeWiring
             .dataFetcher("relationships", new AuthenticatedResolver<>(
-                new EntityRelationshipsResultResolver(graphClient)
+                new EntityRelationshipsResultResolver(graphClient))
+            )
+        );
+    }
+
     private void configureAssertionResolvers(final RuntimeWiring.Builder builder) {
         builder.type("Assertion", typeWiring -> typeWiring.dataFetcher("relationships",
             new AuthenticatedResolver<>(new EntityRelationshipsResultResolver(graphClient)))

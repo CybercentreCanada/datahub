@@ -317,11 +317,19 @@ fragment licenseFields on License {
     urn
     type
     ownership {
-    ...ownershipFields
+        ...ownershipFields
     }
     properties {
         ...licensePropertiesFields
     }
+}
+
+fragment licenseAssociationFields on LicenseAssociation {
+    license {
+        ...licenseFields
+    }
+    proof
+    reference
 }
 
 fragment dashboardFields on Dashboard {

@@ -19,6 +19,7 @@ entities:
       - status
       - container
       - deprecation
+      - licensing
   - name: dataHubPolicy
     doc: DataHub Policies represent access policies granted to users or groups on metadata operations like edit, view etc.
     category: internal

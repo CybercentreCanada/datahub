@@ -16,7 +16,7 @@ import com.linkedin.common.GlobalTags
 import com.linkedin.common.GlossaryTerms
 import com.linkedin.common.BrowsePaths
 import com.linkedin.common.DataPlatformInstance
-import com.linkedin.license.License
+import com.linkedin.license.Licensing
 
 /**
  * A union of all supported metadata aspects for a Dataset
@@ -35,7 +35,7 @@ typeref DatasetAspect = union[
   EditableSchemaMetadata,
   GlobalTags,
   GlossaryTerms,
-  License,
+  Licensing,
   BrowsePaths,
   DataPlatformInstance,
   ViewProperties

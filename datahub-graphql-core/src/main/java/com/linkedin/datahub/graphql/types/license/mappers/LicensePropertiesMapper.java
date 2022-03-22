@@ -39,7 +39,11 @@ public class LicensePropertiesMapper implements ModelMapper<com.linkedin.license
 
         if (licenseProperties.hasCustomProperties()) {
             licensePropertiesResult.setCustomProperties(StringMapMapper.map(licenseProperties.getCustomProperties()));
-        }       
+        }
+
+        if (licenseProperties.hasExternalUrl()) {
+            licensePropertiesResult.setExternalUrl(licenseProperties.getExternalUrl().toString());
+        }
         return licensePropertiesResult;
     }
 }

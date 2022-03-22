@@ -744,7 +744,7 @@ type Dataset implements EntityWithRelationships & Entity {
     """
     The License associated with the Dataset
     """
-    license: License
+    licensing: LicenseAssociation
 
     """
     Statistics about how this Dataset is used
@@ -3230,6 +3230,15 @@ type UsabilityItem {
 }
 
 """
+Type use when attaching a license to an entity
+"""
+type LicenseAssociation {
+    license: License!
+    reference: String!
+    proof: String
+}
+
+"""
 Additional read only properties about a Glossary Term
 """
 type LicenseProperties {
@@ -3253,12 +3262,14 @@ type LicenseProperties {
     modifiedTime: Long!
 
     customProperties: [StringMapEntry!]
+    
+    externalUrl: String
 }
 
 """
 A License Metadata Entity
 """
-type License implements EntityWithRelationships & Entity {
+type License implements Entity {
 
     """
     The primary key of the license

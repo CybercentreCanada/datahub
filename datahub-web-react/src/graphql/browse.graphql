@@ -37,8 +37,8 @@ query getBrowseResults($input: BrowseInput!) {
                 domain {
                     ...entityDomain
                 }
-                license {
-                    ...licenseFields
+                licensing {
+                    ...licenseAssociationFields
                 }
             }
             ... on Dashboard {

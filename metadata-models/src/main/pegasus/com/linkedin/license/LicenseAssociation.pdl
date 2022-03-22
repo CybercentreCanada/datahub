@@ -2,21 +2,32 @@ namespace com.linkedin.license
 
 import com.linkedin.common.Urn
 import com.linkedin.common.Url
+import com.linkedin.common.DatasetUrn
+import com.linkedin.common.LicenseUrn
 
 /**
- * Properties of an applied glossary term.
+ * Properties that apply to relationships with a License
  */
 record LicenseAssociation {
  /**
   * Urn of the applied License
   */
+  urn: LicenseUrn
+
+  /**
+   * Urn for the destination of the relationship
+   */
+  @Relationship = {
+    "name": "LicensedUnder",
+    "entityTypes": [ "dataset" ]
+  }
   @Searchable = {
     "fieldName": "license",
     "fieldType": "URN",
-    "addToFilters": true,
-    "filterNameOverride": "License"
+    "hasValuesFieldName": "hasLicense",
+    "queryByDefault": false
   }
-  urn: Urn
+  dataset: DatasetUrn
 
   /**
   * Reference link to the license file

@@ -1,8 +1,5 @@
 query getLicense($urn: String!) {
     license(urn: $urn) {
-        ...licenseFields,
-        datasets: relationships(input: { types: ["HAS"], direction: OUTGOING, start: 0, count: 1 }) {
-            ...fullRelationshipResults
-        }
+        ...licenseFields
     }
 }
