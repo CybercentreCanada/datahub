@@ -1,6 +1,7 @@
 package com.linkedin.datahub.graphql.types.common.mappers;
 
 import com.linkedin.common.urn.Urn;
+import com.linkedin.datahub.graphql.generated.Assertion;
 import com.linkedin.datahub.graphql.generated.Chart;
 import com.linkedin.datahub.graphql.generated.Container;
 import com.linkedin.datahub.graphql.generated.CorpGroup;
@@ -124,6 +125,11 @@ public class UrnToEntityMapper implements ModelMapper<com.linkedin.common.urn.Ur
       partialEntity = new License();
       ((License) partialEntity).setUrn(input.toString());
       ((License) partialEntity).setType(EntityType.LICENSE);
+    }
+    if (input.getEntityType().equals("assertion")) {
+      partialEntity = new Assertion();
+      ((Assertion) partialEntity).setUrn(input.toString());
+      ((Assertion) partialEntity).setType(EntityType.ASSERTION);
     }
     return partialEntity;
   }

@@ -28,6 +28,7 @@ workbook_graphql_query = """
       id
       name
       luid
+      uri
       projectName
       owner {
         username
@@ -48,10 +49,6 @@ workbook_graphql_query = """
         containedInDashboards {
           name
           path
-        }
-        upstreamDatasources {
-          id
-          name
         }
         datasourceFields {
           __typename
@@ -123,6 +120,10 @@ workbook_graphql_query = """
         extractLastRefreshTime
         extractLastIncrementalUpdateTime
         extractLastUpdateTime
+        downstreamSheets {
+          name
+          id
+        }
         upstreamDatabases {
           id
           name
@@ -175,12 +176,17 @@ workbook_graphql_query = """
             dataType
           }
         }
-        upstreamDatasources {
-          name
-        }
         workbook {
           name
           projectName
+        }
+      }
+      upstreamDatasources {
+        name
+        id
+        downstreamSheets {
+          name
+          id
         }
       }
     }
@@ -240,21 +246,23 @@ published_datasource_graphql_query = """
     extractLastRefreshTime
     extractLastIncrementalUpdateTime
     extractLastUpdateTime
-    downstreamSheets {
-        name
-        id
-        workbook {
-            name
-            projectName
-            }
-        }
+    upstreamDatabases {
+      id
+      name
+      connectionType
+      isEmbedded
+    }
     upstreamTables {
+      id
+      name
+      schema
+      fullName
+      connectionType
+      description
+      columns {
         name
-        schema
-        fullName
-        connectionType
-        description
-        contact {name}
+        remoteType
+      }
     }
     fields {
         __typename
@@ -290,7 +298,6 @@ published_datasource_graphql_query = """
             dataType
             }
     }
-    upstreamDatasources {name}
     owner {username}
     description
     uri
@@ -420,9 +427,9 @@ def make_description_from_params(description, formula):
 
 def get_field_value_in_sheet(field, field_name):
     if field.get("__typename", "") == "DatasourceField":
-        field_value = field.get("remoteField", {}).get(field_name, "")
-    else:
-        field_value = field.get(field_name, "")
+        field = field.get("remoteField") if field.get("remoteField") else {}
+
+    field_value = field.get(field_name, "")
     return field_value
 
 
@@ -477,8 +484,4 @@ def query_metadata(server, main_query, connection_name, first, offset, qry_filte
     )
     query_result = server.metadata.query(query)
 
-    if "errors" in query_result:
-        raise MetadataQueryException(
-            f"Connection: {connection_name} Error: {query_result['errors']}"
-        )
     return query_result
