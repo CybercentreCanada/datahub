@@ -39,8 +39,13 @@ node {
 /*
   Wrappers around Yarn Tasks.
  */
-task yarnInstall(type: YarnTask) {
-  args = ['install']
+
+task yarnSSLSetup(type: YarnTask) {
+  args = ['config', 'set', 'strict-ssl', 'false', '-g']
+}
+
+task yarnInstall(type: YarnTask, dependsOn: yarnSSLSetup) {
+  args = ['install', '--network-timeout', '3000000']
 }
 
 task yarnGenerate(type: YarnTask, dependsOn: yarnInstall) {

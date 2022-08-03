@@ -48,7 +48,7 @@ services:
       - zookeeper
       - broker
     ports:
-      - "8081:8081"
+      - "18081:8081"
 
   elasticsearch:
     image: elasticsearch:7.9.3

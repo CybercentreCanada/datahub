@@ -15,11 +15,17 @@ FROM --platform=$BUILDPLATFORM node:16.13.0-alpine3.14 AS prod-build
 RUN apk --no-cache --update-cache --available upgrade \
     && apk --no-cache add perl openjdk8
 
+COPY ./ssl_proxy_corp_cse-cst_gc_ca.crt /usr/local/share/ca-certificates/ssl_proxy_corp_cse-cst_gc_ca.crt
+RUN update-ca-certificates
+
+RUN npm config set strict-ssl false
+
 ARG ENABLE_EMBER="false"
 ARG USE_SYSTEM_NODE="true"
 ENV CI=true
 ENV GRADLE_OPTS="-Xms256m -Xmx512m"
 COPY . datahub-src
+ENV NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/ssl_proxy_corp_cse-cst_gc_ca.crt
 RUN cd datahub-src \
     && ./gradlew :datahub-web-react:build -x test -x yarnTest -x yarnLint \
     && ./gradlew :datahub-frontend:dist -PenableEmber=${ENABLE_EMBER} -PuseSystemNode=${USE_SYSTEM_NODE} -x test -x yarnTest -x yarnLint \
@@ -46,12 +52,12 @@ EXPOSE $SERVER_PORT
 HEALTHCHECK --start-period=2m --retries=4 CMD curl --fail http://localhost:$SERVER_PORT/admin || exit 1
 
 ENV JAVA_OPTS=" \
-   -Xms512m \
-   -Xmx1024m \
-   -Dhttp.port=$SERVER_PORT \
-   -Dconfig.file=datahub-frontend/conf/application.conf \
-   -Djava.security.auth.login.config=datahub-frontend/conf/jaas.conf \
-   -Dlogback.configurationFile=datahub-frontend/conf/logback.xml \
-   -Dlogback.debug=false \
-   -Dpidfile.path=/dev/null"
+    -Xms512m \
+    -Xmx1024m \
+    -Dhttp.port=$SERVER_PORT \
+    -Dconfig.file=datahub-frontend/conf/application.conf \
+    -Djava.security.auth.login.config=datahub-frontend/conf/jaas.conf \
+    -Dlogback.configurationFile=datahub-frontend/conf/logback.xml \
+    -Dlogback.debug=false \
+    -Dpidfile.path=/dev/null"
 CMD ["datahub-frontend/bin/datahub-frontend"]
