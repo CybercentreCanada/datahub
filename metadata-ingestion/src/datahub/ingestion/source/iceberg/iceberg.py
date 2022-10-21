@@ -104,8 +104,8 @@ class IcebergSource(StatefulIngestionSourceBase):
     """
 
     def __init__(self, config: IcebergSourceConfig, ctx: PipelineContext) -> None:
-        super().__init__(ctx)
-        self.PLATFORM: str = "iceberg"
+        super().__init__(config, ctx)
+        self.platform: str = "iceberg"
         self.report: IcebergSourceReport = IcebergSourceReport()
         self.config: IcebergSourceConfig = config
         self.iceberg_client: FilesystemTables = config.filesystem_tables
@@ -135,7 +135,7 @@ class IcebergSource(StatefulIngestionSourceBase):
                 table: Table = self.iceberg_client.load(dataset_path)
                 yield from self._create_iceberg_workunit(dataset_name, table)
                 dataset_urn: str = make_dataset_urn_with_platform_instance(
-                    self.PLATFORM,
+                    self.platform,
                     dataset_name,
                     self.config.platform_instance,
                     self.config.env,
@@ -161,7 +161,7 @@ class IcebergSource(StatefulIngestionSourceBase):
     ) -> Iterable[MetadataWorkUnit]:
         self.report.report_table_scanned(dataset_name)
         dataset_urn: str = make_dataset_urn_with_platform_instance(
-            self.PLATFORM,
+            self.platform,
             dataset_name,
             self.config.platform_instance,
             self.config.env,
@@ -248,9 +248,9 @@ class IcebergSource(StatefulIngestionSourceBase):
                 entityUrn=dataset_urn,
                 aspectName="dataPlatformInstance",
                 aspect=DataPlatformInstanceClass(
-                    platform=make_data_platform_urn(self.PLATFORM),
+                    platform=make_data_platform_urn(self.platform),
                     instance=make_dataplatform_instance_urn(
-                        self.PLATFORM, self.config.platform_instance
+                        self.platform, self.config.platform_instance
                     ),
                 ),
             )
@@ -268,7 +268,7 @@ class IcebergSource(StatefulIngestionSourceBase):
         )
         schema_metadata = SchemaMetadata(
             schemaName=dataset_name,
-            platform=make_data_platform_urn(self.PLATFORM),
+            platform=make_data_platform_urn(self.platform),
             version=0,
             hash="",
             platformSchema=OtherSchema(rawSchema=repr(table.schema())),
@@ -315,6 +315,10 @@ class IcebergSource(StatefulIngestionSourceBase):
                 }
             ],
         }
+
+    def get_platform_instance_id(self) -> str:
+        assert self.config.platform_instance is not None
+        return self.config.platform_instance
 
     def get_report(self) -> SourceReport:
         return self.report
