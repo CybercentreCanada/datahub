@@ -134,6 +134,16 @@ class IcebergSource(StatefulIngestionSourceBase):
                 # Try to load an Iceberg table.  Might not contain one, this will be caught by NoSuchTableException.
                 table: Table = self.iceberg_client.load(dataset_path)
                 yield from self._create_iceberg_workunit(dataset_name, table)
+                dataset_urn: str = make_dataset_urn_with_platform_instance(
+                    self.PLATFORM,
+                    dataset_name,
+                    self.config.platform_instance,
+                    self.config.env,
+                )
+                self.stale_entity_removal_handler.add_entity_to_state(type="table", urn=dataset_urn)
+
+                # Clean up stale entities at the end
+                yield from self.stale_entity_removal_handler.gen_removed_entity_workunits()
             except NoSuchTableException:
                 # Path did not contain a valid Iceberg table. Silently ignore this.
                 LOGGER.debug(
@@ -160,7 +170,6 @@ class IcebergSource(StatefulIngestionSourceBase):
             urn=dataset_urn,
             aspects=[],
         )
-        self.stale_entity_removal_handler.add_entity_to_state(type="table", urn=dataset_urn)
 
         custom_properties: Dict = dict(table.properties())
         custom_properties["location"] = table.location()
