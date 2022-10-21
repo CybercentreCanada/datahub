@@ -158,9 +158,10 @@ class IcebergSource(StatefulIngestionSourceBase):
                     self.config.platform_instance,
                     self.config.env,
                 )
-                self.stale_entity_removal_handler.add_entity_to_state(
-                    type="table", urn=dataset_urn
-                )
+                self.stale_entity_removal_handler.add_entity_to_state(type="table", urn=dataset_urn)
+
+                # Clean up stale entities at the end
+                yield from self.stale_entity_removal_handler.gen_removed_entity_workunits()
             except NoSuchTableException:
                 # Path did not contain a valid Iceberg table. Silently ignore this.
                 LOGGER.debug(
@@ -192,7 +193,6 @@ class IcebergSource(StatefulIngestionSourceBase):
             urn=dataset_urn,
             aspects=[Status(removed=False)],
         )
-        self.stale_entity_removal_handler.add_entity_to_state(type="table", urn=dataset_urn)
 
         custom_properties: Dict = dict(table.properties())
         custom_properties["location"] = table.location()
