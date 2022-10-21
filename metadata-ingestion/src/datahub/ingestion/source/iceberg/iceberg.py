@@ -34,6 +34,9 @@ from datahub.ingestion.source.iceberg.iceberg_common import (
     IcebergSourceConfig,
     IcebergSourceReport,
 )
+from datahub.ingestion.source.state.stateful_ingestion_base import StatefulIngestionSourceBase
+from datahub.ingestion.source.state.stale_entity_removal_handler import StaleEntityRemovalHandler
+from datahub.ingestion.source.state.iceberg_state import IcebergCheckpointState
 from datahub.ingestion.source.iceberg.iceberg_profiler import IcebergProfiler
 from datahub.metadata.com.linkedin.pegasus2avro.metadata.snapshot import DatasetSnapshot
 from datahub.metadata.com.linkedin.pegasus2avro.mxe import MetadataChangeEvent
@@ -81,7 +84,7 @@ _all_atomic_types = {
     SourceCapability.OWNERSHIP,
     "Optionally enabled via configuration by specifying which Iceberg table property holds user or group ownership.",
 )
-class IcebergSource(Source):
+class IcebergSource(StatefulIngestionSourceBase):
     """
     ## Integration Details
 
@@ -106,6 +109,14 @@ class IcebergSource(Source):
         self.report: IcebergSourceReport = IcebergSourceReport()
         self.config: IcebergSourceConfig = config
         self.iceberg_client: FilesystemTables = config.filesystem_tables
+
+        self.stale_entity_removal_handler = StaleEntityRemovalHandler(
+            source=self,
+            config=self.config,
+            state_type_class=IcebergCheckpointState,
+            pipeline_name=self.ctx.pipeline_name,
+            run_id=self.ctx.run_id,
+        )
 
     @classmethod
     def create(cls, config_dict: Dict, ctx: PipelineContext) -> "IcebergSource":
