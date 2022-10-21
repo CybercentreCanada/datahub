@@ -192,6 +192,7 @@ class IcebergSource(StatefulIngestionSourceBase):
             urn=dataset_urn,
             aspects=[Status(removed=False)],
         )
+        self.stale_entity_removal_handler.add_entity_to_state(type="table", urn=dataset_urn)
 
         custom_properties: Dict = dict(table.properties())
         custom_properties["location"] = table.location()
