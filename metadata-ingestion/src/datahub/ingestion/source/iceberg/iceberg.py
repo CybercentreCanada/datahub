@@ -34,6 +34,9 @@ from datahub.ingestion.source.iceberg.iceberg_common import (
     IcebergSourceConfig,
     IcebergSourceReport,
 )
+from datahub.ingestion.source.state.stateful_ingestion_base import StatefulIngestionSourceBase
+from datahub.ingestion.source.state.stale_entity_removal_handler import StaleEntityRemovalHandler
+from datahub.ingestion.source.state.iceberg_state import IcebergCheckpointState
 from datahub.ingestion.source.iceberg.iceberg_profiler import IcebergProfiler
 from datahub.ingestion.source.state.entity_removal_state import GenericCheckpointState
 from datahub.ingestion.source.state.stale_entity_removal_handler import (
