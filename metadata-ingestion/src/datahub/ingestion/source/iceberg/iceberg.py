@@ -141,9 +141,6 @@ class IcebergSource(StatefulIngestionSourceBase):
                     self.config.env,
                 )
                 self.stale_entity_removal_handler.add_entity_to_state(type="table", urn=dataset_urn)
-
-                # Clean up stale entities at the end
-                yield from self.stale_entity_removal_handler.gen_removed_entity_workunits()
             except NoSuchTableException:
                 # Path did not contain a valid Iceberg table. Silently ignore this.
                 LOGGER.debug(
@@ -155,6 +152,9 @@ class IcebergSource(StatefulIngestionSourceBase):
                 LOGGER.exception(
                     f"Exception while processing table {dataset_path}, skipping it.",
                 )
+        
+        # Clean up stale entities at the end
+        yield from self.stale_entity_removal_handler.gen_removed_entity_workunits()
 
     def _create_iceberg_workunit(
         self, dataset_name: str, table: Table
