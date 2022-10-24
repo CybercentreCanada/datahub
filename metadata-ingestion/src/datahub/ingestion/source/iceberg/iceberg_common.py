@@ -13,7 +13,10 @@ from datahub.configuration.common import (
     ConfigModel,
     ConfigurationError,
 )
-from datahub.ingestion.source.state.stale_entity_removal_handler import StatefulStaleMetadataRemovalConfig, StaleEntityRemovalSourceReport
+from datahub.ingestion.source.state.stale_entity_removal_handler import (
+    StatefulStaleMetadataRemovalConfig,
+    StaleEntityRemovalSourceReport,
+)
 from datahub.ingestion.source.state.stateful_ingestion_base import (
     StatefulIngestionConfigBase,
 )
@@ -50,8 +53,10 @@ class IcebergProfilingConfig(ConfigModel):
 
 
 class IcebergSourceStatefulIngestionConfig(StatefulStaleMetadataRemovalConfig):
-    """ Iceberg custom stateful ingestion config definition(overrides _entity_types of StatefulStaleMetadataRemovalConfig). """
+    """Iceberg custom stateful ingestion config definition(overrides _entity_types of StatefulStaleMetadataRemovalConfig)."""
+
     _entity_types: List[str] = pydantic.Field(default=["table"])
+
 
 class IcebergSourceConfig(StatefulIngestionConfigBase, DatasetSourceConfigBase):
     # Override the stateful_ingestion config param with the Iceberg custom stateful ingestion config in the IcebergSourceConfig
