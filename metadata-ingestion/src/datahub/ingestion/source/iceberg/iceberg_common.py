@@ -6,20 +6,12 @@ import pydantic
 from azure.storage.filedatalake import FileSystemClient, PathProperties
 from iceberg.core.filesystem.abfss_filesystem import AbfssFileSystem
 from iceberg.core.filesystem.filesystem_tables import FilesystemTables
-import pydantic
 from pydantic import Field, root_validator
 
 from datahub.configuration.common import (
     AllowDenyPattern,
     ConfigModel,
     ConfigurationError,
-)
-from datahub.ingestion.source.state.stale_entity_removal_handler import (
-    StatefulStaleMetadataRemovalConfig,
-    StaleEntityRemovalSourceReport,
-)
-from datahub.ingestion.source.state.stateful_ingestion_base import (
-    StatefulIngestionConfigBase,
 )
 from datahub.configuration.source_common import DatasetSourceConfigBase
 from datahub.ingestion.api.source import SourceReport
@@ -31,7 +23,6 @@ from datahub.ingestion.source.state.stale_entity_removal_handler import (
 from datahub.ingestion.source.state.stateful_ingestion_base import (
     StatefulIngestionConfigBase,
 )
-
 
 class IcebergProfilingConfig(ConfigModel):
     enabled: bool = Field(
