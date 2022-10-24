@@ -14,7 +14,10 @@ from datahub.configuration.common import (
     ConfigModel,
     ConfigurationError,
 )
-from datahub.ingestion.source.state.stale_entity_removal_handler import StatefulStaleMetadataRemovalConfig, StaleEntityRemovalSourceReport
+from datahub.ingestion.source.state.stale_entity_removal_handler import (
+    StatefulStaleMetadataRemovalConfig,
+    StaleEntityRemovalSourceReport,
+)
 from datahub.ingestion.source.state.stateful_ingestion_base import (
     StatefulIngestionConfigBase,
 )

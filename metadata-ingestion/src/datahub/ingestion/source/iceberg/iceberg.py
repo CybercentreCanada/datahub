@@ -34,8 +34,12 @@ from datahub.ingestion.source.iceberg.iceberg_common import (
     IcebergSourceConfig,
     IcebergSourceReport,
 )
-from datahub.ingestion.source.state.stateful_ingestion_base import StatefulIngestionSourceBase
-from datahub.ingestion.source.state.stale_entity_removal_handler import StaleEntityRemovalHandler
+from datahub.ingestion.source.state.stateful_ingestion_base import (
+    StatefulIngestionSourceBase,
+)
+from datahub.ingestion.source.state.stale_entity_removal_handler import (
+    StaleEntityRemovalHandler,
+)
 from datahub.ingestion.source.state.iceberg_state import IcebergCheckpointState
 from datahub.ingestion.source.iceberg.iceberg_profiler import IcebergProfiler
 from datahub.ingestion.source.state.entity_removal_state import GenericCheckpointState
@@ -158,10 +162,9 @@ class IcebergSource(StatefulIngestionSourceBase):
                     self.config.platform_instance,
                     self.config.env,
                 )
-                self.stale_entity_removal_handler.add_entity_to_state(type="table", urn=dataset_urn)
-
-                # Clean up stale entities at the end
-                yield from self.stale_entity_removal_handler.gen_removed_entity_workunits()
+                self.stale_entity_removal_handler.add_entity_to_state(
+                    type="table", urn=dataset_urn
+                )
             except NoSuchTableException:
                 # Path did not contain a valid Iceberg table. Silently ignore this.
                 LOGGER.debug(
