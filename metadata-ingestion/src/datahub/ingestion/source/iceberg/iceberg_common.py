@@ -14,7 +14,6 @@ from datahub.configuration.common import (
     ConfigurationError,
 )
 from datahub.configuration.source_common import DatasetSourceConfigBase
-from datahub.ingestion.api.source import SourceReport
 from datahub.ingestion.source.azure.azure_common import AdlsSourceConfig
 from datahub.ingestion.source.state.stale_entity_removal_handler import (
     StaleEntityRemovalSourceReport,
