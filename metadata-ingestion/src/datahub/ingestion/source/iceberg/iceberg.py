@@ -330,7 +330,7 @@ class IcebergSource(StatefulIngestionSourceBase):
         return self.report
 
     def close(self) -> None:
-        pass
+        self.prepare_for_commit()
 
 
 def _parse_datatype(type: IcebergTypes.Type, nullable: bool = False) -> Dict[str, Any]:
