@@ -42,6 +42,7 @@ from datahub.ingestion.source.state.stale_entity_removal_handler import (
 from datahub.ingestion.source.state.stateful_ingestion_base import (
     StatefulIngestionSourceBase,
 )
+from datahub.metadata.com.linkedin.pegasus2avro.common import Status
 from datahub.metadata.com.linkedin.pegasus2avro.metadata.snapshot import DatasetSnapshot
 from datahub.metadata.com.linkedin.pegasus2avro.mxe import MetadataChangeEvent
 from datahub.metadata.com.linkedin.pegasus2avro.schema import (
@@ -174,7 +175,7 @@ class IcebergSource(StatefulIngestionSourceBase):
         )
         dataset_snapshot = DatasetSnapshot(
             urn=dataset_urn,
-            aspects=[],
+            aspects=[Status(removed=False)],
         )
 
         custom_properties: Dict = dict(table.properties())
