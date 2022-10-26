@@ -89,6 +89,7 @@ _all_atomic_types = {
     SourceCapability.OWNERSHIP,
     "Optionally enabled via configuration by specifying which Iceberg table property holds user or group ownership.",
 )
+@capability(SourceCapability.DELETION_DETECTION, "Enabled via stateful ingestion")
 class IcebergSource(StatefulIngestionSourceBase):
     """
     ## Integration Details

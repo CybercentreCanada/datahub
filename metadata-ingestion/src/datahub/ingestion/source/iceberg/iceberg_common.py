@@ -59,8 +59,9 @@ class IcebergSourceStatefulIngestionConfig(StatefulStaleMetadataRemovalConfig):
 
 class IcebergSourceConfig(StatefulIngestionConfigBase, DatasetSourceConfigBase):
     # Override the stateful_ingestion config param with the Iceberg custom stateful ingestion config in the IcebergSourceConfig
-    stateful_ingestion: Optional[IcebergSourceStatefulIngestionConfig] = None
-
+    stateful_ingestion: Optional[IcebergSourceStatefulIngestionConfig] = pydantic.Field(
+        default=None, description="Iceberg Stateful Ingestion Config."
+    )
     adls: Optional[AdlsSourceConfig] = Field(
         default=None,
         description="[Azure Data Lake Storage](https://docs.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-introduction) to crawl for Iceberg tables.  This is one filesystem type supported by this source and **only one can be configured**.",
