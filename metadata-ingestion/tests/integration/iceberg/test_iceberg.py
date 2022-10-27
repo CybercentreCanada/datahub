@@ -42,7 +42,7 @@ def test_iceberg_ingest(pytestconfig, tmp_path, mock_time):
             "source": {
                 "type": "iceberg",
                 "config": {
-                    "localfs": str(test_resources_dir / "test_data"),
+                    "localfs": str(test_resources_dir / "test_data/ingest_test"),
                     "user_ownership_property": "owner",
                     "group_ownership_property": "owner",
                 },
@@ -62,119 +62,119 @@ def test_iceberg_ingest(pytestconfig, tmp_path, mock_time):
     mce_helpers.check_golden_file(
         pytestconfig,
         output_path=tmp_path / "iceberg_mces.json",
-        golden_path=test_resources_dir / "iceberg_mces_golden.json",
+        golden_path=test_resources_dir / "test_data/ingest_test/iceberg_mces_golden.json",
     )
 
 
-@freeze_time(FROZEN_TIME)
-@pytest.mark.integration
-def test_iceberg_stateful_ingest(pytestconfig, tmp_path, mock_time, mock_datahub_graph):
-    test_resources_dir = pytestconfig.rootpath / "tests/integration/iceberg/"
-    platform_instance = "test_platform_instance_1"
+# @freeze_time(FROZEN_TIME)
+# @pytest.mark.integration
+# def test_iceberg_stateful_ingest(pytestconfig, tmp_path, mock_time, mock_datahub_graph):
+#     test_resources_dir = pytestconfig.rootpath / "tests/integration/iceberg/"
+#     platform_instance = "test_platform_instance_1"
 
-    scd_before_deletion: Dict[str, Any] = {
-            "localfs": str(test_resources_dir / "test_data"),   #TODO: Point this to a folder with 'before deleted' data
-            "user_ownership_property": "owner",
-            "group_ownership_property": "owner",
-            "platform_instance": f"{platform_instance}",
-            # enable stateful ingestion
-            "stateful_ingestion": {
-                "enabled": True,
-                "remove_stale_metadata": True,
-                "fail_safe_threshold": 100.0,
-                "state_provider": {
-                    "type": "datahub",
-                    "config": {"datahub_api": {"server": GMS_SERVER}},
-                },
-            },
-        }
+#     scd_before_deletion: Dict[str, Any] = {
+#             "localfs": str(test_resources_dir / "test_data"),   #TODO: Point this to a folder with 'before deleted' data
+#             "user_ownership_property": "owner",
+#             "group_ownership_property": "owner",
+#             "platform_instance": f"{platform_instance}",
+#             # enable stateful ingestion
+#             "stateful_ingestion": {
+#                 "enabled": True,
+#                 "remove_stale_metadata": True,
+#                 "fail_safe_threshold": 100.0,
+#                 "state_provider": {
+#                     "type": "datahub",
+#                     "config": {"datahub_api": {"server": GMS_SERVER}},
+#                 },
+#             },
+#         }
 
-    scd_after_deletion: Dict[str, Any] = {
-            "localfs": str(test_resources_dir / "test_data"),   #TODO: Point this to a folder with 'after deleted' data
-            "user_ownership_property": "owner",
-            "group_ownership_property": "owner",
-            "platform_instance": f"{platform_instance}",
-            # enable stateful ingestion
-            "stateful_ingestion": {
-                "enabled": True,
-                "remove_stale_metadata": True,
-                "fail_safe_threshold": 100.0,
-                "state_provider": {
-                    "type": "datahub",
-                    "config": {"datahub_api": {"server": GMS_SERVER}},
-                },
-            },
-        }
+#     scd_after_deletion: Dict[str, Any] = {
+#             "localfs": str(test_resources_dir / "test_data"),   #TODO: Point this to a folder with 'after deleted' data
+#             "user_ownership_property": "owner",
+#             "group_ownership_property": "owner",
+#             "platform_instance": f"{platform_instance}",
+#             # enable stateful ingestion
+#             "stateful_ingestion": {
+#                 "enabled": True,
+#                 "remove_stale_metadata": True,
+#                 "fail_safe_threshold": 100.0,
+#                 "state_provider": {
+#                     "type": "datahub",
+#                     "config": {"datahub_api": {"server": GMS_SERVER}},
+#                 },
+#             },
+#         }
 
-    pipeline_config_dict: Dict[str, Any] = {
-            "source": {
-                "type": "iceberg",
-                "config": scd_before_deletion,
-            },
-            "sink": {
-                # we are not really interested in the resulting events for this test
-                "type": "console"
-            },
-            "pipeline_name": "test_pipeline",
-        }
+#     pipeline_config_dict: Dict[str, Any] = {
+#             "source": {
+#                 "type": "iceberg",
+#                 "config": scd_before_deletion,
+#             },
+#             "sink": {
+#                 # we are not really interested in the resulting events for this test
+#                 "type": "console"
+#             },
+#             "pipeline_name": "test_pipeline",
+#         }
 
-    with patch(
-        "datahub.ingestion.source.state_provider.datahub_ingestion_checkpointing_provider.DataHubGraph",
-        mock_datahub_graph,
-    ) as mock_checkpoint:
+#     with patch(
+#         "datahub.ingestion.source.state_provider.datahub_ingestion_checkpointing_provider.DataHubGraph",
+#         mock_datahub_graph,
+#     ) as mock_checkpoint:
 
-        # Both checkpoint and reporting will use the same mocked graph instance.
-        mock_checkpoint.return_value = mock_datahub_graph
+#         # Both checkpoint and reporting will use the same mocked graph instance.
+#         mock_checkpoint.return_value = mock_datahub_graph
 
-        # Do the first run of the pipeline and get the default job's checkpoint.
-        pipeline_run1 = run_and_get_pipeline(pipeline_config_dict)
-        checkpoint1 = get_current_checkpoint_from_pipeline(pipeline_run1)
+#         # Do the first run of the pipeline and get the default job's checkpoint.
+#         pipeline_run1 = run_and_get_pipeline(pipeline_config_dict)
+#         checkpoint1 = get_current_checkpoint_from_pipeline(pipeline_run1)
 
-        assert checkpoint1
-        assert checkpoint1.state
+#         assert checkpoint1
+#         assert checkpoint1.state
 
-        # Set iceberg config where a table is deleted.
-        pipeline_config_dict["source"]["config"] = scd_after_deletion
-        # Capture MCEs of second run to validate Status(removed=true)
-        deleted_mces_path = "{}/{}".format(tmp_path, "iceberg_deleted_mces.json")
-        pipeline_config_dict["sink"]["type"] = "file"
-        pipeline_config_dict["sink"]["config"] = {"filename": deleted_mces_path}
+#         # Set iceberg config where a table is deleted.
+#         pipeline_config_dict["source"]["config"] = scd_after_deletion
+#         # Capture MCEs of second run to validate Status(removed=true)
+#         deleted_mces_path = "{}/{}".format(tmp_path, "iceberg_deleted_mces.json")
+#         pipeline_config_dict["sink"]["type"] = "file"
+#         pipeline_config_dict["sink"]["config"] = {"filename": deleted_mces_path}
 
-        # Do the second run of the pipeline.
-        pipeline_run2 = run_and_get_pipeline(pipeline_config_dict)
-        checkpoint2 = get_current_checkpoint_from_pipeline(pipeline_run2)
+#         # Do the second run of the pipeline.
+#         pipeline_run2 = run_and_get_pipeline(pipeline_config_dict)
+#         checkpoint2 = get_current_checkpoint_from_pipeline(pipeline_run2)
 
-        assert checkpoint2
-        assert checkpoint2.state
+#         assert checkpoint2
+#         assert checkpoint2.state
 
-        # Perform all assertions on the states. The deleted table should not be
-        # part of the second state
-        state1 = cast(IcebergCheckpointState, checkpoint1.state)
-        state2 = cast(IcebergCheckpointState, checkpoint2.state)
-        difference_urns = list(
-            state1.get_urns_not_in(type="dataset", other_checkpoint_state=state2)
-        )
+#         # Perform all assertions on the states. The deleted table should not be
+#         # part of the second state
+#         state1 = cast(IcebergCheckpointState, checkpoint1.state)
+#         state2 = cast(IcebergCheckpointState, checkpoint2.state)
+#         difference_urns = list(
+#             state1.get_urns_not_in(type="dataset", other_checkpoint_state=state2)
+#         )
 
-        assert len(difference_urns) == 1
+#         assert len(difference_urns) == 1
 
-        urn1 = "urn:li:dataset:(urn:li:dataPlatform:dbt,pagila.public.actor,PROD)"  #TODO: Replace this urn with whatever is deleted
+#         urn1 = "urn:li:dataset:(urn:li:dataPlatform:dbt,pagila.public.actor,PROD)"  #TODO: Replace this urn with whatever is deleted
 
-        assert urn1 in difference_urns
+#         assert urn1 in difference_urns
 
-        # Validate that all providers have committed successfully.
-        validate_all_providers_have_committed_successfully(
-            pipeline=pipeline_run1, expected_providers=1
-        )
-        validate_all_providers_have_committed_successfully(
-            pipeline=pipeline_run2, expected_providers=1
-        )
+#         # Validate that all providers have committed successfully.
+#         validate_all_providers_have_committed_successfully(
+#             pipeline=pipeline_run1, expected_providers=1
+#         )
+#         validate_all_providers_have_committed_successfully(
+#             pipeline=pipeline_run2, expected_providers=1
+#         )
 
-        # Verify the output.
-        mce_helpers.check_golden_file(
-            pytestconfig,
-            output_path=tmp_path / "iceberg_stateful_mces.json",
-            golden_path=test_resources_dir / "iceberg_deleted_table_mces_golden.json",
-        )
+#         # Verify the output.
+#         mce_helpers.check_golden_file(
+#             pytestconfig,
+#             output_path=tmp_path / "iceberg_stateful_mces.json",
+#             golden_path=test_resources_dir / "iceberg_deleted_table_mces_golden.json",
+#         )
 
 
 @freeze_time(FROZEN_TIME)
@@ -197,7 +197,7 @@ def test_iceberg_profiling(pytestconfig, tmp_path, mock_time):
     When importing the metadata files into this test, we need to create a `version-hint.text` with a value that
     reflects the version of the table, and then change the code in `TestLocalFileSystem._replace_path()` accordingly.
     """
-    test_resources_dir = pytestconfig.rootpath / "tests/integration/iceberg/test_data"
+    test_resources_dir = pytestconfig.rootpath / "tests/integration/iceberg/test_data/profiling_test"
 
     # Run the metadata ingestion pipeline.
     pipeline = Pipeline.create(
@@ -290,5 +290,5 @@ def test_iceberg_profiling(pytestconfig, tmp_path, mock_time):
         pytestconfig,
         output_path=tmp_path / "iceberg_mces.json",
         golden_path=test_resources_dir
-        / "datahub/integration/profiling/iceberg_mces_golden.json",
+        / "iceberg_mces_golden.json",
     )
