@@ -4,6 +4,9 @@ from unittest.mock import patch
 
 import pytest
 from freezegun import freeze_time
+from datahub.ingestion.source.iceberg.iceberg import IcebergSource
+from datahub.ingestion.source.state.checkpoint import Checkpoint
+from datahub.ingestion.source.state.iceberg_state import IcebergCheckpointState
 from iceberg.core.filesystem.file_status import FileStatus
 from iceberg.core.filesystem.local_filesystem import LocalFileSystem
 
