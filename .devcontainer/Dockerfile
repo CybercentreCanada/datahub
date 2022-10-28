@@ -13,7 +13,7 @@ ADD ${extraCaCertsDir} /usr/local/share/ca-certificates/
 RUN update-ca-certificates \
     && mkdir $(dirname "${CURL_CA_BUNDLE}") \
     && cp "$(python3 -m certifi)" "${CURL_CA_BUNDLE}" \
-    # For some reason at this point, JAVA_HOME has been messed up by sdkman, so figure out where it's installed
+    # For some reason at this point, JAVA_HOME has been messed up by sdkman, so figure out where Java is installed
     && JAVA_DIR=$(readlink -f "$(dirname $(which java))/../") \
     && for cert in /usr/local/share/ca-certificates/*; do \
         openssl x509 -outform der -in "$cert" -out /tmp/certificate.der; \
