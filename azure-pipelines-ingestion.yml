@@ -6,7 +6,8 @@ trigger:
 
 variables:
   containerRegistry: uchimera
-  imageRepository: cccs/dev/datahub-build
+  baseImageRepository: acryldata/datahub-ingestion-base
+  finalImageRepository: cccs/datahub-ingestion
   buildTimestamp: $[format('{0:yyyyMMddHHmmss}', pipeline.startTime)]
   DOCKER_BUILDKIT: 1
 
@@ -19,17 +20,25 @@ steps:
       echo "##vso[task.setvariable variable=BRANCH_NAME]$BRANCH_NAME"
     displayName: Parse Source Control Branch Name
   - task: Docker@2
+    displayName: Build base image
+    inputs:
+      command: build
+      containerRegistry: $(containerRegistry)
+      repository: $(baseImageRepository)
+      dockerfile: $(Build.SourcesDirectory)/docker/datahub-ingestion/base.Dockerfile
+  - task: Docker@2
     displayName: Login to ${{ variables.containerRegistry }}
     inputs:
       command: login
       containerRegistry: ${{ variables.containerRegistry }}
   - task: Docker@2
-    displayName: Build, tag and push image to ${{ variables.containerRegistry }}
+    displayName: Build and Push DataHub Ingestion image
     inputs:
       command: buildAndPush
-      containerRegistry: ${{ variables.containerRegistry }}
-      repository: $(imageRepository)
-      Dockerfile: $(Build.SourcesDirectory)/cccs-build/build-container.Dockerfile
+      containerRegistry: $(containerRegistry)
+      repository: $(finalImageRepository)
+      dockerfile: $(Build.SourcesDirectory)/docker/datahub-ingestion/Dockerfile
+      buildContext: $(Build.SourcesDirectory)
       tags: |
         $(BRANCH_NAME)
         $(BRANCH_NAME)_$(buildTimestamp)_b$(Build.BuildId)
