@@ -140,7 +140,7 @@ def test_iceberg_stateful_ingest(pytestconfig, tmp_path, mock_time, mock_datahub
         # Set iceberg config where a table is deleted.
         pipeline_config_dict["source"]["config"] = scd_after_deletion
         # Capture MCEs of second run to validate Status(removed=true)
-        deleted_mces_path = "{}/{}".format(tmp_path, "iceberg_deleted_mces.json")
+        deleted_mces_path = f"{tmp_path}/iceberg_deleted_mces.json"
         pipeline_config_dict["sink"]["type"] = "file"
         pipeline_config_dict["sink"]["config"] = {"filename": deleted_mces_path}
 
