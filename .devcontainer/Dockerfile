@@ -1,4 +1,4 @@
-FROM uchimera.azurecr.io/cccs/dev/datahub-build:feature_CLDN-1684
+FROM uchimera.azurecr.io/cccs/dev/datahub-build:cccs-main
 
 # Initialize custom CA bundle for Python and Node
 ENV CURL_CA_BUNDLE="/usr/local/share/python-ca-bundle/cabundle.crt" \
