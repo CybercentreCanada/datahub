@@ -58,6 +58,10 @@ from datahub.metadata.schema_classes import (
     OwnershipClass,
     OwnershipTypeClass,
 )
+from datahub.utilities.source_helpers import (
+    auto_stale_entity_removal,
+    auto_status_aspect,
+)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -130,6 +134,12 @@ class IcebergSource(StatefulIngestionSourceBase):
         return cls(config, ctx)
 
     def get_workunits(self) -> Iterable[MetadataWorkUnit]:
+        return auto_stale_entity_removal(
+            self.stale_entity_removal_handler,
+            auto_status_aspect(self.get_workunits_internal()),
+        )
+
+    def get_workunits_internal(self) -> Iterable[MetadataWorkUnit]:
         for dataset_path, dataset_name in self.config.get_paths():  # Tuple[str, str]
             try:
                 if not self.config.table_pattern.allowed(dataset_name):
