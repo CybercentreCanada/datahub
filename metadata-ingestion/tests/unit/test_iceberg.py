@@ -1,8 +1,27 @@
 from typing import Any, Optional
 
 import pytest
-from iceberg.api import types as IcebergTypes
-from iceberg.api.types.types import NestedField
+from pyiceberg.types import (
+    BinaryType,
+    BooleanType,
+    DateType,
+    DecimalType,
+    DoubleType,
+    FixedType,
+    FloatType,
+    IntegerType,
+    ListType,
+    LongType,
+    MapType,
+    NestedField,
+    PrimitiveType,
+    StringType,
+    StructType,
+    TimestampType,
+    TimestamptzType,
+    TimeType,
+    UUIDType,
+)
 
 from datahub.configuration.common import ConfigurationError
 from datahub.ingestion.api.common import PipelineContext
@@ -146,47 +165,47 @@ def test_config_multiple_filesystems():
 @pytest.mark.parametrize(
     "iceberg_type, expected_schema_field_type",
     [
-        (IcebergTypes.BinaryType.get(), BytesTypeClass),
-        (IcebergTypes.BooleanType.get(), BooleanTypeClass),
-        (IcebergTypes.DateType.get(), DateTypeClass),
+        (BinaryType(), BytesTypeClass),
+        (BooleanType(), BooleanTypeClass),
+        (DateType(), DateTypeClass),
         (
-            IcebergTypes.DecimalType.of(3, 2),
+            DecimalType(3, 2),
             NumberTypeClass,
         ),
-        (IcebergTypes.DoubleType.get(), NumberTypeClass),
-        (IcebergTypes.FixedType.of_length(4), FixedTypeClass),
-        (IcebergTypes.FloatType.get(), NumberTypeClass),
-        (IcebergTypes.IntegerType.get(), NumberTypeClass),
-        (IcebergTypes.LongType.get(), NumberTypeClass),
-        (IcebergTypes.StringType.get(), StringTypeClass),
+        (DoubleType(), NumberTypeClass),
+        (FixedType(4), FixedTypeClass),
+        (FloatType(), NumberTypeClass),
+        (IntegerType(), NumberTypeClass),
+        (LongType(), NumberTypeClass),
+        (StringType(), StringTypeClass),
         (
-            IcebergTypes.TimestampType.with_timezone(),
+            TimestampType(),
             TimeTypeClass,
         ),
         (
-            IcebergTypes.TimestampType.without_timezone(),
+            TimestamptzType(),
             TimeTypeClass,
         ),
-        (IcebergTypes.TimeType.get(), TimeTypeClass),
+        (TimeType(), TimeTypeClass),
         (
-            IcebergTypes.UUIDType.get(),
+            UUIDType(),
             StringTypeClass,
         ),
     ],
 )
 def test_iceberg_primitive_type_to_schema_field(
-    iceberg_type: IcebergTypes.PrimitiveType, expected_schema_field_type: Any
+    iceberg_type: PrimitiveType, expected_schema_field_type: Any
 ) -> None:
     """
     Test converting a primitive typed Iceberg field to a SchemaField
     """
     iceberg_source_instance = with_iceberg_source()
     for column in [
-        NestedField.required(
-            1, "required_field", iceberg_type, "required field documentation"
+        NestedField(
+            1, "required_field", iceberg_type, True, "required field documentation"
         ),
-        NestedField.optional(
-            1, "optional_field", iceberg_type, "optional field documentation"
+        NestedField(
+            1, "optional_field", iceberg_type, False, "optional field documentation"
         ),
     ]:
         schema_fields = iceberg_source_instance._get_schema_fields_for_column(column)
@@ -194,58 +213,59 @@ def test_iceberg_primitive_type_to_schema_field(
             len(schema_fields) == 1
         ), f"Expected 1 field, but got {len(schema_fields)}"
         assert_field(
-            schema_fields[0], column.doc, column.is_optional, expected_schema_field_type
+            schema_fields[0], column.doc, column.optional, expected_schema_field_type
         )
 
 
 @pytest.mark.parametrize(
     "iceberg_type, expected_array_nested_type",
     [
-        (IcebergTypes.BinaryType.get(), "bytes"),
-        (IcebergTypes.BooleanType.get(), "boolean"),
-        (IcebergTypes.DateType.get(), "date"),
+        (BinaryType(), "bytes"),
+        (BooleanType(), "boolean"),
+        (DateType(), "date"),
         (
-            IcebergTypes.DecimalType.of(3, 2),
+            DecimalType(3, 2),
             "decimal",
         ),
-        (IcebergTypes.DoubleType.get(), "double"),
-        (IcebergTypes.FixedType.of_length(4), "fixed"),
-        (IcebergTypes.FloatType.get(), "float"),
-        (IcebergTypes.IntegerType.get(), "int"),
-        (IcebergTypes.LongType.get(), "long"),
-        (IcebergTypes.StringType.get(), "string"),
+        (DoubleType(), "double"),
+        (FixedType(4), "fixed"),
+        (FloatType(), "float"),
+        (IntegerType(), "int"),
+        (LongType(), "long"),
+        (StringType(), "string"),
         (
-            IcebergTypes.TimestampType.with_timezone(),
+            TimestampType(),
             "timestamp-micros",
         ),
         (
-            IcebergTypes.TimestampType.without_timezone(),
+            TimestamptzType(),
             "timestamp-micros",
         ),
-        (IcebergTypes.TimeType.get(), "time-micros"),
+        (TimeType(), "time-micros"),
         (
-            IcebergTypes.UUIDType.get(),
+            UUIDType(),
             "uuid",
         ),
     ],
 )
 def test_iceberg_list_to_schema_field(
-    iceberg_type: IcebergTypes.PrimitiveType, expected_array_nested_type: Any
+    iceberg_type: PrimitiveType, expected_array_nested_type: Any
 ) -> None:
     """
     Test converting a list typed Iceberg field to an ArrayType SchemaField, including the list nested type.
     """
-    list_column: NestedField = NestedField.required(
+    list_column = NestedField(
         1,
         "listField",
-        IcebergTypes.ListType.of_required(2, iceberg_type),
+        ListType(2, iceberg_type, True),
+        True,
         "documentation",
     )
     iceberg_source_instance = with_iceberg_source()
     schema_fields = iceberg_source_instance._get_schema_fields_for_column(list_column)
     assert len(schema_fields) == 1, f"Expected 1 field, but got {len(schema_fields)}"
     assert_field(
-        schema_fields[0], list_column.doc, list_column.is_optional, ArrayTypeClass
+        schema_fields[0], list_column.doc, list_column.optional, ArrayTypeClass
     )
     assert isinstance(
         schema_fields[0].type.type, ArrayType
@@ -259,44 +279,45 @@ def test_iceberg_list_to_schema_field(
 @pytest.mark.parametrize(
     "iceberg_type, expected_map_type",
     [
-        (IcebergTypes.BinaryType.get(), BytesTypeClass),
-        (IcebergTypes.BooleanType.get(), BooleanTypeClass),
-        (IcebergTypes.DateType.get(), DateTypeClass),
+        (BinaryType(), BytesTypeClass),
+        (BooleanType(), BooleanTypeClass),
+        (DateType(), DateTypeClass),
         (
-            IcebergTypes.DecimalType.of(3, 2),
+            DecimalType(3, 2),
             NumberTypeClass,
         ),
-        (IcebergTypes.DoubleType.get(), NumberTypeClass),
-        (IcebergTypes.FixedType.of_length(4), FixedTypeClass),
-        (IcebergTypes.FloatType.get(), NumberTypeClass),
-        (IcebergTypes.IntegerType.get(), NumberTypeClass),
-        (IcebergTypes.LongType.get(), NumberTypeClass),
-        (IcebergTypes.StringType.get(), StringTypeClass),
+        (DoubleType(), NumberTypeClass),
+        (FixedType(4), FixedTypeClass),
+        (FloatType(), NumberTypeClass),
+        (IntegerType(), NumberTypeClass),
+        (LongType(), NumberTypeClass),
+        (StringType(), StringTypeClass),
         (
-            IcebergTypes.TimestampType.with_timezone(),
+            TimestampType(),
             TimeTypeClass,
         ),
         (
-            IcebergTypes.TimestampType.without_timezone(),
+            TimestamptzType(),
             TimeTypeClass,
         ),
-        (IcebergTypes.TimeType.get(), TimeTypeClass),
+        (TimeType(), TimeTypeClass),
         (
-            IcebergTypes.UUIDType.get(),
+            UUIDType(),
             StringTypeClass,
         ),
     ],
 )
 def test_iceberg_map_to_schema_field(
-    iceberg_type: IcebergTypes.PrimitiveType, expected_map_type: Any
+    iceberg_type: PrimitiveType, expected_map_type: Any
 ) -> None:
     """
     Test converting a map typed Iceberg field to a MapType SchemaField, where the key is the same type as the value.
     """
-    map_column: NestedField = NestedField.required(
+    map_column = NestedField(
         1,
         "mapField",
-        IcebergTypes.MapType.of_required(11, 12, iceberg_type, iceberg_type),
+        MapType(11, iceberg_type, 12, iceberg_type, True),
+        True,
         "documentation",
     )
     iceberg_source_instance = with_iceberg_source()
@@ -304,9 +325,7 @@ def test_iceberg_map_to_schema_field(
     # Converting an Iceberg Map type will be done by creating an array of struct(key, value) records.
     # The first field will be the array.
     assert len(schema_fields) == 3, f"Expected 3 fields, but got {len(schema_fields)}"
-    assert_field(
-        schema_fields[0], map_column.doc, map_column.is_optional, ArrayTypeClass
-    )
+    assert_field(schema_fields[0], map_column.doc, map_column.optional, ArrayTypeClass)
 
     # The second field will be the key type
     assert_field(schema_fields[1], None, False, expected_map_type)
@@ -318,54 +337,52 @@ def test_iceberg_map_to_schema_field(
 @pytest.mark.parametrize(
     "iceberg_type, expected_schema_field_type",
     [
-        (IcebergTypes.BinaryType.get(), BytesTypeClass),
-        (IcebergTypes.BooleanType.get(), BooleanTypeClass),
-        (IcebergTypes.DateType.get(), DateTypeClass),
+        (BinaryType(), BytesTypeClass),
+        (BooleanType(), BooleanTypeClass),
+        (DateType(), DateTypeClass),
         (
-            IcebergTypes.DecimalType.of(3, 2),
+            DecimalType(3, 2),
             NumberTypeClass,
         ),
-        (IcebergTypes.DoubleType.get(), NumberTypeClass),
-        (IcebergTypes.FixedType.of_length(4), FixedTypeClass),
-        (IcebergTypes.FloatType.get(), NumberTypeClass),
-        (IcebergTypes.IntegerType.get(), NumberTypeClass),
-        (IcebergTypes.LongType.get(), NumberTypeClass),
-        (IcebergTypes.StringType.get(), StringTypeClass),
+        (DoubleType(), NumberTypeClass),
+        (FixedType(4), FixedTypeClass),
+        (FloatType(), NumberTypeClass),
+        (IntegerType(), NumberTypeClass),
+        (LongType(), NumberTypeClass),
+        (StringType(), StringTypeClass),
         (
-            IcebergTypes.TimestampType.with_timezone(),
+            TimestampType(),
             TimeTypeClass,
         ),
         (
-            IcebergTypes.TimestampType.without_timezone(),
+            TimestamptzType(),
             TimeTypeClass,
         ),
-        (IcebergTypes.TimeType.get(), TimeTypeClass),
+        (TimeType(), TimeTypeClass),
         (
-            IcebergTypes.UUIDType.get(),
+            UUIDType(),
             StringTypeClass,
         ),
     ],
 )
 def test_iceberg_struct_to_schema_field(
-    iceberg_type: IcebergTypes.PrimitiveType, expected_schema_field_type: Any
+    iceberg_type: PrimitiveType, expected_schema_field_type: Any
 ) -> None:
     """
     Test converting a struct typed Iceberg field to a RecordType SchemaField.
     """
-    field1: NestedField = NestedField.required(
-        11, "field1", iceberg_type, "field documentation"
-    )
-    struct_column: NestedField = NestedField.required(
-        1, "structField", IcebergTypes.StructType.of([field1]), "struct documentation"
+    field1 = NestedField(11, "field1", iceberg_type, True, "field documentation")
+    struct_column = NestedField(
+        1, "structField", StructType(field1), True, "struct documentation"
     )
     iceberg_source_instance = with_iceberg_source()
     schema_fields = iceberg_source_instance._get_schema_fields_for_column(struct_column)
     assert len(schema_fields) == 2, f"Expected 2 fields, but got {len(schema_fields)}"
     assert_field(
-        schema_fields[0], struct_column.doc, struct_column.is_optional, RecordTypeClass
+        schema_fields[0], struct_column.doc, struct_column.optional, RecordTypeClass
     )
     assert_field(
-        schema_fields[1], field1.doc, field1.is_optional, expected_schema_field_type
+        schema_fields[1], field1.doc, field1.optional, expected_schema_field_type
     )
 
 

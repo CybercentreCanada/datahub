@@ -4,9 +4,11 @@ from typing import Dict, Iterable, List, Optional, Tuple
 
 import pydantic
 from azure.storage.filedatalake import FileSystemClient, PathProperties
-from iceberg.core.filesystem.abfss_filesystem import AbfssFileSystem
-from iceberg.core.filesystem.filesystem_tables import FilesystemTables
 from pydantic import Field, root_validator
+from pyiceberg.exceptions import NoSuchIcebergTableError
+from pyiceberg.io import FileIO, load_file_io
+from pyiceberg.serializers import FromInputFile
+from pyiceberg.table import Table
 
 from datahub.configuration.common import (
     AllowDenyPattern,
@@ -118,26 +120,63 @@ class IcebergSourceConfig(StatefulIngestionConfigBase):
             FileSystemClient: Azure Filesystem client instance to access storage account files and folders.
         """
         if self.adls:  # TODO Use local imports for abfss
-            AbfssFileSystem.get_instance().set_conf(self.adls.dict())
             return self.adls.get_filesystem_client()
         raise ConfigurationError("No ADLS filesystem client configured")
 
-    @property
-    def filesystem_tables(self) -> FilesystemTables:
-        """Iceberg FilesystemTables abstraction to access tables on a filesystem.
-        Currently supporting ADLS (Azure Storage Account) and local filesystem.
+    # @property
+    # def filesystem_tables(self) -> FilesystemTables:
+    #     """Iceberg FilesystemTables abstraction to access tables on a filesystem.
+    #     Currently supporting ADLS (Azure Storage Account) and local filesystem.
 
-        Raises:
-            ConfigurationError: If no filesystem was configured.
+    #     Raises:
+    #         ConfigurationError: If no filesystem was configured.
 
-        Returns:
-            FilesystemTables: An Iceberg FilesystemTables abstraction instance to access tables on a filesystem
-        """
-        if self.adls:
-            return FilesystemTables(self.adls.dict())
-        elif self.localfs:
-            return FilesystemTables()
-        raise ConfigurationError("No filesystem client configured")
+    #     Returns:
+    #         FilesystemTables: An Iceberg FilesystemTables abstraction instance to access tables on a filesystem
+    #     """
+    #     if self.adls:
+    #         return FilesystemTables(self.adls.dict())
+    #     elif self.localfs:
+    #         return FilesystemTables()
+    #     raise ConfigurationError("No filesystem client configured")
+
+    def load_table(self, table_name: str, table_location: str) -> Table:
+        adlfs_properties = {
+            "account_name": self.adls.account_name,
+            "client_id": self.adls.client_id,
+            "client_secret": self.adls.client_secret,
+            "tenant_id": self.adls.tenant_id,
+        }
+
+        io = load_file_io(properties=adlfs_properties, location=table_location)
+        table_version = self._read_version_hint(table_location, io)
+        try:
+            metadata_location = (
+                f"{table_location}/metadata/v{table_version}.metadata.json"
+            )
+            metadata_file = io.new_input(metadata_location)
+            metadata = FromInputFile.table_metadata(metadata_file)
+            return Table(
+                # identifier=(table.dbName, table.tableName),
+                identifier=table_name,
+                metadata=metadata,
+                metadata_location=metadata_location,
+                io=load_file_io(
+                    {**adlfs_properties, **metadata.properties}, metadata.location
+                ),
+            )
+        except FileNotFoundError as e:
+            raise NoSuchIcebergTableError() from e
+
+    # Temporary until pyiceberg implements catalogs.
+    def _read_version_hint(self, location: str, io: FileIO) -> int:
+        version_hint_file = io.new_input(f"{location}/metadata/version-hint.text")
+
+        if not version_hint_file.exists():
+            return 0
+        else:
+            with version_hint_file.open() as f:
+                return int(f.readline())
 
     def _get_adls_paths(self, root_path: str, depth: int) -> Iterable[Tuple[str, str]]:
         if self.adls and depth < self.max_path_depth:
