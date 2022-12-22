@@ -141,14 +141,10 @@ class IcebergSourceConfig(StatefulIngestionConfigBase):
     #     raise ConfigurationError("No filesystem client configured")
 
     def load_table(self, table_name: str, table_location: str) -> Table:
-        adlfs_properties = {
-            "account_name": self.adls.account_name,
-            "client_id": self.adls.client_id,
-            "client_secret": self.adls.client_secret,
-            "tenant_id": self.adls.tenant_id,
-        }
-
-        io = load_file_io(properties=adlfs_properties, location=table_location)
+        io = load_file_io(
+            properties={**vars(self.adls)} if self.adls else {},
+            location=table_location,
+        )
         table_version = self._read_version_hint(table_location, io)
         try:
             metadata_location = (
@@ -162,7 +158,11 @@ class IcebergSourceConfig(StatefulIngestionConfigBase):
                 metadata=metadata,
                 metadata_location=metadata_location,
                 io=load_file_io(
-                    {**adlfs_properties, **metadata.properties}, metadata.location
+                    {
+                        **vars(self.adls),
+                        **metadata.properties,
+                    },
+                    metadata.location,
                 ),
             )
         except FileNotFoundError as e:
@@ -215,7 +215,7 @@ class IcebergSourceConfig(StatefulIngestionConfigBase):
         if self.adls:
             yield from self._get_adls_paths(self.adls.base_path, 0)
         elif self.localfs:
-            yield from self._get_localfs_paths(self.localfs, 0)
+            yield from self._get_localfs_paths(self.localfs[len("file:"):], 0)
         else:
             raise ConfigurationError("No filesystem client configured")
 

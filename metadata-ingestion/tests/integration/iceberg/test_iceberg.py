@@ -4,8 +4,8 @@ from unittest.mock import patch
 
 import pytest
 from freezegun import freeze_time
-from iceberg.core.filesystem.file_status import FileStatus
-from iceberg.core.filesystem.local_filesystem import LocalFileSystem
+# from iceberg.core.filesystem.file_status import FileStatus
+# from iceberg.core.filesystem.local_filesystem import LocalFileSystem
 
 from datahub.ingestion.run.pipeline import Pipeline
 from datahub.ingestion.source.iceberg.iceberg import IcebergSource
@@ -34,7 +34,9 @@ def get_current_checkpoint_from_pipeline(
 @freeze_time(FROZEN_TIME)
 @pytest.mark.integration
 def test_iceberg_ingest(pytestconfig, tmp_path, mock_time):
-    test_resources_dir = pytestconfig.rootpath / "tests/integration/iceberg/"
+    # test_resources_dir = "file:/" / pytestconfig.rootpath / "tests/integration/iceberg/"
+    test_resources_dir = f"file:{pytestconfig.rootpath}/tests/integration/iceberg"
+    print(f"-------------------> {test_resources_dir}")
 
     # Run the metadata ingestion pipeline.
     pipeline = Pipeline.create(
@@ -43,7 +45,7 @@ def test_iceberg_ingest(pytestconfig, tmp_path, mock_time):
             "source": {
                 "type": "iceberg",
                 "config": {
-                    "localfs": str(test_resources_dir / "test_data/ingest_test"),
+                    "localfs": f"{test_resources_dir}/test_data/ingest_test",
                     "user_ownership_property": "owner",
                     "group_ownership_property": "owner",
                 },
@@ -201,7 +203,7 @@ def test_iceberg_profiling(pytestconfig, tmp_path, mock_time):
     reflects the version of the table, and then change the code in `TestLocalFileSystem._replace_path()` accordingly.
     """
     test_resources_dir = (
-        pytestconfig.rootpath / "tests/integration/iceberg/test_data/profiling_test"
+        "file:" / pytestconfig.rootpath / "tests/integration/iceberg/test_data/profiling_test"
     )
 
     # Run the metadata ingestion pipeline.

@@ -1,7 +1,7 @@
 import json
 import logging
 import uuid
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Generator, Iterable, Optional, Tuple
 
 from pyiceberg.exceptions import NoSuchIcebergTableError
 from pyiceberg.table import Table
@@ -118,13 +118,13 @@ class IcebergSource(StatefulIngestionSourceBase):
     The DataHub Iceberg source plugin extracts metadata from [Iceberg tables](https://iceberg.apache.org/spec/) stored in a distributed or local file system.
     Typically, Iceberg tables are stored in a distributed file system like S3 or Azure Data Lake Storage (ADLS) and registered in a catalog.  There are various catalog
     implementations like Filesystem-based, RDBMS-based or even REST-based catalogs.  This Iceberg source plugin relies on the
-    [Iceberg python_legacy library](https://github.com/apache/iceberg/tree/master/python_legacy) and its support for catalogs is limited at the moment.
-    A new version of the [Iceberg Python library](https://github.com/apache/iceberg/tree/master/python) is currently in development and should fix this.
+    [pyiceberg library](https://py.iceberg.apache.org/) and its support for catalogs is limited at the moment.
+    A new version of pyiceberg is currently in development and should fix this.
     Because of this limitation, this source plugin **will only ingest HadoopCatalog-based tables that have a `version-hint.text` metadata file**.
 
     Ingestion of tables happens in 2 steps:
     1. Discover Iceberg tables stored in file system.
-    2. Load discovered tables using Iceberg python_legacy library
+    2. Load discovered tables using pyiceberg.
 
     The current implementation of the Iceberg source plugin will only discover tables stored in a local file system or in ADLS.  Support for S3 could
     be added fairly easily.
@@ -159,11 +159,11 @@ class IcebergSource(StatefulIngestionSourceBase):
         for dataset_path, dataset_name in self.config.get_paths():  # Tuple[str, str]
             try:
                 if not self.config.table_pattern.allowed(dataset_name):
-                    # Path contained a valid Iceberg table, but is rejected by pattern.
+                    # Path is rejected by pattern, report as dropped.
                     self.report.report_dropped(dataset_name)
                     continue
 
-                # Try to load an Iceberg table.  Might not contain one, this will be caught by NoSuchTableException.
+                # Try to load an Iceberg table.  Might not contain one, this will be caught by NoSuchIcebergTableError.
                 table = self.config.load_table(dataset_name, dataset_path)
                 yield from self._create_iceberg_workunit(dataset_name, table)
                 dataset_urn: str = make_dataset_urn_with_platform_instance(
@@ -177,15 +177,14 @@ class IcebergSource(StatefulIngestionSourceBase):
                 )
             except NoSuchIcebergTableError:
                 # Path did not contain a valid Iceberg table. Silently ignore this.
+                # Once we move to catalogs, this won't be needed.
                 LOGGER.debug(
                     f"Path {dataset_path} does not contain table {dataset_name}"
                 )
                 pass
             except Exception as e:
-                # This is a custom CCCS modification, when we complete CLDN-1784 we
-                # will be able to change this back to emit an exception instead of a warning
-                self.report.report_warning("general", f"Failed to create workunit: {e}")
-                LOGGER.warning(
+                self.report.report_failure("general", f"Failed to create workunit: {e}")
+                LOGGER.exception(
                     f"Exception while processing table {dataset_path}, skipping it.",
                 )
 
@@ -204,7 +203,8 @@ class IcebergSource(StatefulIngestionSourceBase):
             aspects=[Status(removed=False)],
         )
 
-        custom_properties: Dict = dict(table.metadata.properties)
+        # Dataset properties aspect.
+        custom_properties = dict(table.metadata.properties)
         custom_properties["location"] = table.metadata.location
         if table.current_snapshot():
             custom_properties["snapshot-id"] = str(table.current_snapshot().snapshot_id)
@@ -216,6 +216,7 @@ class IcebergSource(StatefulIngestionSourceBase):
         )
         dataset_snapshot.aspects.append(dataset_properties)
 
+        # Dataset ownership aspect.
         dataset_ownership = self._get_ownership_aspect(table)
         if dataset_ownership:
             dataset_snapshot.aspects.append(dataset_ownership)
@@ -262,9 +263,7 @@ class IcebergSource(StatefulIngestionSourceBase):
                         source=None,
                     )
                 )
-        if owners:
-            return OwnershipClass(owners=owners)
-        return None
+        return OwnershipClass(owners=owners) if owners else None
 
     def _get_dataplatform_instance_aspect(
         self, dataset_urn: str
@@ -289,9 +288,9 @@ class IcebergSource(StatefulIngestionSourceBase):
     def _create_schema_metadata(
         self, dataset_name: str, table: Table
     ) -> SchemaMetadata:
-        schema_fields: List[SchemaField] = self._get_schema_fields(
-            table.schema().columns
-        )
+        schema_fields = [
+            self._get_schema_fields_for_column(c) for c in table.schema().columns
+        ]
         schema_metadata = SchemaMetadata(
             schemaName=dataset_name,
             platform=make_data_platform_urn(self.platform),
@@ -302,28 +301,17 @@ class IcebergSource(StatefulIngestionSourceBase):
         )
         return schema_metadata
 
-    def _get_schema_fields(self, columns: Tuple) -> List[SchemaField]:
-        canonical_schema: List[SchemaField] = []
-        for column in columns:
-            fields = self._get_schema_fields_for_column(column)
-            canonical_schema.extend(fields)
-        return canonical_schema
-
     def _get_schema_fields_for_column(
         self,
         column: NestedField,
-    ) -> List[SchemaField]:
-        field_type = column.field_type
-        # if field_type.is_primitive_type() or field_type.is_nested_type():
-        avro_schema: Dict = self._get_avro_schema_from_data_type(column)
-        schema_fields: List[SchemaField] = schema_util.avro_schema_to_mce_fields(
+    ) -> Generator[SchemaField, None, None]:
+        avro_schema = self._get_avro_schema_from_column(column)
+        schema_fields = schema_util.avro_schema_to_mce_fields(
             json.dumps(avro_schema), default_nullable=column.optional
         )
-        return schema_fields
+        yield from schema_fields
 
-        # raise ValueError(f"Invalid Iceberg field type: {field_type}")
-
-    def _get_avro_schema_from_data_type(self, column: NestedField) -> Dict[str, Any]:
+    def _get_avro_schema_from_column(self, column: NestedField) -> Dict[str, Any]:
         """
         See Iceberg documentation for Avro mapping:
         https://iceberg.apache.org/#spec/#appendix-a-format-specific-requirements
@@ -392,16 +380,19 @@ def _parse_datatype(type: IcebergType, nullable: bool = False) -> Dict[str, Any]
 
 
 def _parse_struct_fields(parts: Tuple[NestedField], nullable: bool) -> Dict[str, Any]:
-    fields = []
-    for nested_field in parts:  # type: NestedField
-        field_name = nested_field.name
-        field_type = _parse_datatype(nested_field.field_type, nested_field.optional)
-        fields.append({"name": field_name, "type": field_type, "doc": nested_field.doc})
+    fields = [
+        {
+            "name": f.name,
+            "type": _parse_datatype(f.field_type, f.optional),
+            "doc": f.doc,
+        }
+        for f in parts
+    ]
     return {
         "type": "record",
         "name": _gen_name("__struct_"),
         "fields": fields,
-        "native_data_type": "struct<{}>".format(parts),
+        "native_data_type": f"struct<{parts}>",
         "_nullable": nullable,
     }
 
