@@ -65,6 +65,10 @@ class SupersetConfig(ConfigModel):
     )
     username: Optional[str] = Field(default=None, description="Superset username.")
     password: Optional[str] = Field(default=None, description="Superset password.")
+    
+    # Custom CCCS field
+    access_token: Optional[str] = Field(default=None, description="Superset Access Token.")
+    
     provider: str = Field(default="db", description="Superset provider.")
     options: Dict = Field(default={}, description="")
     env: str = Field(
@@ -134,16 +138,32 @@ class SupersetSource(Source):
         self.config = config
         self.report = SourceReport()
 
-        login_response = requests.post(
-            f"{self.config.connect_uri}/api/v1/security/login",
-            None,
-            {
-                "username": self.config.username,
-                "password": self.config.password,
-                "refresh": True,
-                "provider": self.config.provider,
-            },
-        )
+        # Custom CCCS code: Use access token if one is supplied
+        # otherwise, use the default 'basic auth' method
+        if self.config.access_token:
+            login_headers = {
+                "Authorization": f"Bearer {self.config.access_token}",
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            }
+            login_data = {"provider": "oauth", "oauth_provider": "azure", "refresh": True}
+
+            login_response = requests.post(
+                f"{self.config.connect_uri}/api/v1/security/login",
+                headers=login_headers,
+                data=json.dumps(login_data),
+            )
+        else:
+            login_response = requests.post(
+                f"{self.config.connect_uri}/api/v1/security/login",
+                None,
+                {
+                    "username": self.config.username,
+                    "password": self.config.password,
+                    "refresh": True,
+                    "provider": self.config.provider,
+                },
+            )
 
         self.access_token = login_response.json()["access_token"]
 
