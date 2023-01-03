@@ -112,7 +112,13 @@ class IcebergProfiler:
             if current_snapshot.summary
             else 0
         )
-        column_count = len(table.schema()._name_to_id)
+        column_count = len(
+            [
+                id
+                for id in table.schema().field_ids
+                if table.schema().find_field(id).field_type.is_primitive
+            ]
+        )
         dataset_profile = DatasetProfileClass(
             timestampMillis=get_sys_time(),
             rowCount=row_count,
