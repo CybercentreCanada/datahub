@@ -102,13 +102,14 @@ class IcebergProfiler:
         Yields:
             Iterator[Iterable[MetadataWorkUnit]]: Workunits related to datasetProfile.
         """
-        if not table.current_snapshot():
+        current_snapshot = table.current_snapshot()
+        if not current_snapshot:
             # Table has no data, cannot profile, or we can't get current_snapshot.
             return
 
         row_count = (
-            int(table.current_snapshot().summary.additional_properties["total-records"])
-            if table.current_snapshot().summary
+            int(current_snapshot.summary.additional_properties["total-records"])
+            if current_snapshot.summary
             else 0
         )
         column_count = len(table.schema()._name_to_id)
@@ -119,15 +120,12 @@ class IcebergProfiler:
         )
         dataset_profile.fieldProfiles = []
 
-        current_snapshot = table.current_snapshot()
         total_count = 0
         null_counts: Dict[int, int] = {}
         min_bounds: Dict[int, Any] = {}
         max_bounds: Dict[int, Any] = {}
         try:
-            for manifest in current_snapshot.manifests(
-                table.io
-            ):  # TODO: table.io is a hack, or is it? Why do I have to do this?
+            for manifest in current_snapshot.manifests(table.io):
                 for manifest_entry in manifest.fetch_manifest_entry(table.io):
                     data_file = manifest_entry.data_file
                     if self.config.include_field_null_count:

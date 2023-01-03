@@ -1,9 +1,8 @@
-import os
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
 import pydantic
-from azure.storage.filedatalake import FileSystemClient, PathProperties
+from fsspec import AbstractFileSystem, filesystem
 from pydantic import Field, root_validator
 from pyiceberg.exceptions import NoSuchIcebergTableError
 from pyiceberg.io import FileIO, load_file_io
@@ -109,44 +108,13 @@ class IcebergSourceConfig(StatefulIngestionConfigBase):
             )
         return values
 
-    @property
-    def adls_filesystem_client(self) -> FileSystemClient:
-        """Azure Filesystem client if configured.
-
-        Raises:
-            ConfigurationError: If ADLS is not configured.
-
-        Returns:
-            FileSystemClient: Azure Filesystem client instance to access storage account files and folders.
-        """
-        if self.adls:  # TODO Use local imports for abfss
-            return self.adls.get_filesystem_client()
-        raise ConfigurationError("No ADLS filesystem client configured")
-
-    # @property
-    # def filesystem_tables(self) -> FilesystemTables:
-    #     """Iceberg FilesystemTables abstraction to access tables on a filesystem.
-    #     Currently supporting ADLS (Azure Storage Account) and local filesystem.
-
-    #     Raises:
-    #         ConfigurationError: If no filesystem was configured.
-
-    #     Returns:
-    #         FilesystemTables: An Iceberg FilesystemTables abstraction instance to access tables on a filesystem
-    #     """
-    #     if self.adls:
-    #         return FilesystemTables(self.adls.dict())
-    #     elif self.localfs:
-    #         return FilesystemTables()
-    #     raise ConfigurationError("No filesystem client configured")
-
     def load_table(self, table_name: str, table_location: str) -> Table:
         io = load_file_io(
             properties={**vars(self.adls)} if self.adls else {},
             location=table_location,
         )
-        table_version = self._read_version_hint(table_location, io)
         try:
+            table_version = self._read_version_hint(table_location, io)
             metadata_location = (
                 f"{table_location}/metadata/v{table_version}.metadata.json"
             )
@@ -157,50 +125,39 @@ class IcebergSourceConfig(StatefulIngestionConfigBase):
                 identifier=table_name,
                 metadata=metadata,
                 metadata_location=metadata_location,
-                io=load_file_io(
-                    {
-                        **vars(self.adls),
-                        **metadata.properties,
-                    },
-                    metadata.location,
-                ),
+                io=io,
             )
         except FileNotFoundError as e:
             raise NoSuchIcebergTableError() from e
 
-    # Temporary until pyiceberg implements catalogs.
+    # Temporary until pyiceberg implements catalogs: https://github.com/apache/iceberg/issues/6430
     def _read_version_hint(self, location: str, io: FileIO) -> int:
         version_hint_file = io.new_input(f"{location}/metadata/version-hint.text")
 
         if not version_hint_file.exists():
-            return 0
+            raise FileNotFoundError()
         else:
             with version_hint_file.open() as f:
-                return int(f.readline())
+                return int(f.read())
 
-    def _get_adls_paths(self, root_path: str, depth: int) -> Iterable[Tuple[str, str]]:
-        if self.adls and depth < self.max_path_depth:
-            sub_paths = self.adls_filesystem_client.get_paths(
-                path=root_path, recursive=False
-            )
-            sub_path: PathProperties
-            for sub_path in sub_paths:
-                if sub_path.is_directory:
-                    dataset_name = ".".join(
-                        sub_path.name[len(self.adls.base_path) + 1 :].split("/")
-                    )
-                    yield self.adls.get_abfss_url(sub_path.name), dataset_name
-                    yield from self._get_adls_paths(sub_path.name, depth + 1)
-
-    def _get_localfs_paths(
-        self, root_path: str, depth: int
+    def _get_paths(
+        self,
+        fs: AbstractFileSystem,
+        root_path: str,
+        path: str,
+        depth: int,
+        fix_path: Callable[[str], str] = lambda path: path,
     ) -> Iterable[Tuple[str, str]]:
-        if self.localfs and depth < self.max_path_depth:
-            for f in os.scandir(root_path):
-                if f.is_dir():
-                    dataset_name = ".".join(f.path[len(self.localfs) + 1 :].split("/"))
-                    yield f.path, dataset_name
-                    yield from self._get_localfs_paths(f.path, depth + 1)
+        if depth < self.max_path_depth:
+            for sub_path in fs.ls(path, detail=True):
+                if sub_path["type"] == "directory":
+                    dataset_name = ".".join(
+                        sub_path["name"][len(root_path) + 1 :].split("/")
+                    )
+                    yield fix_path(sub_path["name"]), dataset_name
+                    yield from self._get_paths(
+                        fs, root_path, sub_path["name"], depth + 1
+                    )
 
     def get_paths(self) -> Iterable[Tuple[str, str]]:
         """Generates a sequence of data paths and dataset names.
@@ -213,9 +170,17 @@ class IcebergSourceConfig(StatefulIngestionConfigBase):
             and the second item is the associated dataset name.
         """
         if self.adls:
-            yield from self._get_adls_paths(self.adls.base_path, 0)
+            yield from self._get_paths(
+                filesystem("abfs", **vars(self.adls)),
+                f"{self.adls.container_name}/{self.adls.base_path}",
+                f"{self.adls.container_name}/{self.adls.base_path}",
+                0,
+                self.adls.get_abfss_url,
+            )
         elif self.localfs:
-            yield from self._get_localfs_paths(self.localfs[len("file:"):], 0)
+            yield from self._get_paths(
+                filesystem("file"), self.localfs, self.localfs, 0
+            )
         else:
             raise ConfigurationError("No filesystem client configured")
 
@@ -234,3 +199,7 @@ class IcebergSourceReport(StaleEntityRemovalSourceReport):
 
     def report_entity_profiled(self, name: str) -> None:
         self.entities_profiled += 1
+
+
+def strltrim(to_trim: str, prefix: str) -> str:
+    return to_trim[len(prefix) :] if to_trim.startswith(prefix) else to_trim

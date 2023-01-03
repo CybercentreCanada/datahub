@@ -13,8 +13,7 @@
                     "com.linkedin.pegasus2avro.dataset.DatasetProperties": {
                         "customProperties": {
                             "owner": "new_owner",
-                            "provider": "ICEBERG",
-                            "location": "/namespace/iceberg_test"
+                           "location": "/namespace/iceberg_test"
                         },
                         "tags": []
                     }
@@ -53,7 +52,7 @@
                         "hash": "",
                         "platformSchema": {
                             "com.linkedin.pegasus2avro.schema.OtherSchema": {
-                                "rawSchema": "Schema(1: level: required string(level documentation),2: event_time: required timestamptz(event_time documentation),3: message: required string(message documentation),4: call_stack: optional list<string>(call_stack documentation))"
+                                "rawSchema": "table {\n  1: level: required string (level documentation)\n  2: event_time: required timestamptz (event_time documentation)\n  3: message: required string (message documentation)\n  4: call_stack: optional list<string> (call_stack documentation)\n}"
                             }
                         },
                         "fields": [

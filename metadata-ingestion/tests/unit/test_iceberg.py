@@ -139,7 +139,7 @@ def test_config_for_tests():
 
 def test_config_no_filesystem():
     """
-    Test when a SAS token is used as an ADLS credential.
+    Test when no filesystem is configured.
     """
     with pytest.raises(ConfigurationError):
         IcebergSource(
@@ -208,9 +208,7 @@ def test_iceberg_primitive_type_to_schema_field(
             1, "optional_field", iceberg_type, False, "optional field documentation"
         ),
     ]:
-        schema_fields = list(
-            iceberg_source_instance._get_schema_fields_for_column(column)
-        )
+        schema_fields = iceberg_source_instance._get_schema_fields_for_column(column)
         assert (
             len(schema_fields) == 1
         ), f"Expected 1 field, but got {len(schema_fields)}"
@@ -264,9 +262,7 @@ def test_iceberg_list_to_schema_field(
         "documentation",
     )
     iceberg_source_instance = with_iceberg_source()
-    schema_fields = list(
-        iceberg_source_instance._get_schema_fields_for_column(list_column)
-    )
+    schema_fields = iceberg_source_instance._get_schema_fields_for_column(list_column)
     assert len(schema_fields) == 1, f"Expected 1 field, but got {len(schema_fields)}"
     assert_field(
         schema_fields[0], list_column.doc, list_column.optional, ArrayTypeClass
@@ -325,9 +321,7 @@ def test_iceberg_map_to_schema_field(
         "documentation",
     )
     iceberg_source_instance = with_iceberg_source()
-    schema_fields = list(
-        iceberg_source_instance._get_schema_fields_for_column(map_column)
-    )
+    schema_fields = iceberg_source_instance._get_schema_fields_for_column(map_column)
     # Converting an Iceberg Map type will be done by creating an array of struct(key, value) records.
     # The first field will be the array.
     assert len(schema_fields) == 3, f"Expected 3 fields, but got {len(schema_fields)}"
@@ -382,9 +376,7 @@ def test_iceberg_struct_to_schema_field(
         1, "structField", StructType(field1), True, "struct documentation"
     )
     iceberg_source_instance = with_iceberg_source()
-    schema_fields = list(
-        iceberg_source_instance._get_schema_fields_for_column(struct_column)
-    )
+    schema_fields = iceberg_source_instance._get_schema_fields_for_column(struct_column)
     assert len(schema_fields) == 2, f"Expected 2 fields, but got {len(schema_fields)}"
     assert_field(
         schema_fields[0], struct_column.doc, struct_column.optional, RecordTypeClass

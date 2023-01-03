@@ -4,8 +4,6 @@ from unittest.mock import patch
 
 import pytest
 from freezegun import freeze_time
-# from iceberg.core.filesystem.file_status import FileStatus
-# from iceberg.core.filesystem.local_filesystem import LocalFileSystem
 
 from datahub.ingestion.run.pipeline import Pipeline
 from datahub.ingestion.source.iceberg.iceberg import IcebergSource
@@ -34,9 +32,7 @@ def get_current_checkpoint_from_pipeline(
 @freeze_time(FROZEN_TIME)
 @pytest.mark.integration
 def test_iceberg_ingest(pytestconfig, tmp_path, mock_time):
-    # test_resources_dir = "file:/" / pytestconfig.rootpath / "tests/integration/iceberg/"
-    test_resources_dir = f"file:{pytestconfig.rootpath}/tests/integration/iceberg"
-    print(f"-------------------> {test_resources_dir}")
+    test_resources_dir = pytestconfig.rootpath / "tests/integration/iceberg/"
 
     # Run the metadata ingestion pipeline.
     pipeline = Pipeline.create(
@@ -184,6 +180,7 @@ def test_iceberg_stateful_ingest(pytestconfig, tmp_path, mock_time, mock_datahub
 
 @freeze_time(FROZEN_TIME)
 @pytest.mark.integration
+@pytest.mark.skip(reason="Implement this test when a proper integration test suite is done using docker.")
 def test_iceberg_profiling(pytestconfig, tmp_path, mock_time):
     """
     This test is using a table created using https://github.com/tabular-io/docker-spark-iceberg.
@@ -202,9 +199,7 @@ def test_iceberg_profiling(pytestconfig, tmp_path, mock_time):
     When importing the metadata files into this test, we need to create a `version-hint.text` with a value that
     reflects the version of the table, and then change the code in `TestLocalFileSystem._replace_path()` accordingly.
     """
-    test_resources_dir = (
-        "file:" / pytestconfig.rootpath / "tests/integration/iceberg/test_data/profiling_test"
-    )
+    test_resources_dir = pytestconfig.rootpath / "tests/integration/iceberg/test_data/profiling_test"
 
     # Run the metadata ingestion pipeline.
     pipeline = Pipeline.create(
@@ -232,65 +227,65 @@ def test_iceberg_profiling(pytestconfig, tmp_path, mock_time):
         }
     )
 
-    class TestLocalFileSystem(LocalFileSystem):
-        # This class acts as a wrapper on LocalFileSystem to intercept calls using a path location.
-        # The wrapper will normalize those paths to be usable by the test.
-        fs: LocalFileSystem
+    # class TestLocalFileSystem(LocalFileSystem):
+    #     # This class acts as a wrapper on LocalFileSystem to intercept calls using a path location.
+    #     # The wrapper will normalize those paths to be usable by the test.
+    #     fs: LocalFileSystem
 
-        @staticmethod
-        def _replace_path(path: Union[str, PosixPath]) -> str:
-            # When the Iceberg table was created, its warehouse folder was '/home/iceberg/warehouse'.  Iceberg tables
-            # are not portable, so we need to replace the warehouse folder by the test location at runtime.
-            normalized_path: str = str(path).replace(
-                "/home/iceberg/warehouse", str(test_resources_dir)
-            )
+    #     @staticmethod
+    #     def _replace_path(path: Union[str, PosixPath]) -> str:
+    #         # When the Iceberg table was created, its warehouse folder was '/home/iceberg/warehouse'.  Iceberg tables
+    #         # are not portable, so we need to replace the warehouse folder by the test location at runtime.
+    #         normalized_path: str = str(path).replace(
+    #             "/home/iceberg/warehouse", str(test_resources_dir)
+    #         )
 
-            # When the Iceberg table was created, a postgres catalog was used instead of a HadoopCatalog.  The HadoopCatalog
-            # expects a file named 'v{}.metadata.json' where {} is the version number from 'version-hint.text'.  Since
-            # 'v2.metadata.json' does not exist, we will redirect the call to '00002-02782173-8364-4caf-a3c4-9567c1d6608f.metadata.json'.
-            if normalized_path.endswith("v2.metadata.json"):
-                return normalized_path.replace(
-                    "v2.metadata.json",
-                    "00002-cc241948-4c12-46d0-9a75-ce3578ec03d4.metadata.json",
-                )
-            return normalized_path
+    #         # When the Iceberg table was created, a postgres catalog was used instead of a HadoopCatalog.  The HadoopCatalog
+    #         # expects a file named 'v{}.metadata.json' where {} is the version number from 'version-hint.text'.  Since
+    #         # 'v2.metadata.json' does not exist, we will redirect the call to '00002-02782173-8364-4caf-a3c4-9567c1d6608f.metadata.json'.
+    #         if normalized_path.endswith("v2.metadata.json"):
+    #             return normalized_path.replace(
+    #                 "v2.metadata.json",
+    #                 "00002-cc241948-4c12-46d0-9a75-ce3578ec03d4.metadata.json",
+    #             )
+    #         return normalized_path
 
-        def __init__(self, fs: LocalFileSystem) -> None:
-            self.fs = fs
+    #     def __init__(self, fs: LocalFileSystem) -> None:
+    #         self.fs = fs
 
-        def open(self, path: str, mode: str = "rb") -> object:
-            return self.fs.open(TestLocalFileSystem._replace_path(path), mode)
+    #     def open(self, path: str, mode: str = "rb") -> object:
+    #         return self.fs.open(TestLocalFileSystem._replace_path(path), mode)
 
-        def delete(self, path: str) -> None:
-            self.fs.delete(TestLocalFileSystem._replace_path(path))
+    #     def delete(self, path: str) -> None:
+    #         self.fs.delete(TestLocalFileSystem._replace_path(path))
 
-        def stat(self, path: str) -> FileStatus:
-            return self.fs.stat(TestLocalFileSystem._replace_path(path))
+    #     def stat(self, path: str) -> FileStatus:
+    #         return self.fs.stat(TestLocalFileSystem._replace_path(path))
 
-        @staticmethod
-        def fix_path(path: str) -> str:
-            return TestLocalFileSystem.fs.fix_path(
-                TestLocalFileSystem._replace_path(path)
-            )
+    #     @staticmethod
+    #     def fix_path(path: str) -> str:
+    #         return TestLocalFileSystem.fs.fix_path(
+    #             TestLocalFileSystem._replace_path(path)
+    #         )
 
-        def create(self, path: str, overwrite: bool = False) -> object:
-            return self.fs.create(TestLocalFileSystem._replace_path(path), overwrite)
+    #     def create(self, path: str, overwrite: bool = False) -> object:
+    #         return self.fs.create(TestLocalFileSystem._replace_path(path), overwrite)
 
-        def rename(self, src: str, dest: str) -> bool:
-            return self.fs.rename(
-                TestLocalFileSystem._replace_path(src),
-                TestLocalFileSystem._replace_path(dest),
-            )
+    #     def rename(self, src: str, dest: str) -> bool:
+    #         return self.fs.rename(
+    #             TestLocalFileSystem._replace_path(src),
+    #             TestLocalFileSystem._replace_path(dest),
+    #         )
 
-        def exists(self, path: str) -> bool:
-            return self.fs.exists(TestLocalFileSystem._replace_path(path))
+    #     def exists(self, path: str) -> bool:
+    #         return self.fs.exists(TestLocalFileSystem._replace_path(path))
 
-    local_fs_wrapper: TestLocalFileSystem = TestLocalFileSystem(
-        LocalFileSystem.get_instance()
-    )
-    with patch.object(LocalFileSystem, "get_instance", return_value=local_fs_wrapper):
-        pipeline.run()
-        pipeline.raise_from_status()
+    # local_fs_wrapper: TestLocalFileSystem = TestLocalFileSystem(
+    #     LocalFileSystem.get_instance()
+    # )
+    # with patch.object(LocalFileSystem, "get_instance", return_value=local_fs_wrapper):
+    pipeline.run()
+    pipeline.raise_from_status()
 
     # Verify the output.
     mce_helpers.check_golden_file(

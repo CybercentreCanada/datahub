@@ -1,7 +1,7 @@
 import json
 import logging
 import uuid
-from typing import Any, Dict, Generator, Iterable, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from pyiceberg.exceptions import NoSuchIcebergTableError
 from pyiceberg.table import Table
@@ -204,7 +204,7 @@ class IcebergSource(StatefulIngestionSourceBase):
         )
 
         # Dataset properties aspect.
-        custom_properties = dict(table.metadata.properties)
+        custom_properties = table.metadata.properties.copy()
         custom_properties["location"] = table.metadata.location
         if table.current_snapshot():
             custom_properties["snapshot-id"] = str(table.current_snapshot().snapshot_id)
@@ -289,14 +289,16 @@ class IcebergSource(StatefulIngestionSourceBase):
         self, dataset_name: str, table: Table
     ) -> SchemaMetadata:
         schema_fields = [
-            self._get_schema_fields_for_column(c) for c in table.schema().columns
+            f
+            for c in table.schema().columns
+            for f in self._get_schema_fields_for_column(c)
         ]
         schema_metadata = SchemaMetadata(
             schemaName=dataset_name,
             platform=make_data_platform_urn(self.platform),
             version=0,
             hash="",
-            platformSchema=OtherSchema(rawSchema=repr(table.schema())),
+            platformSchema=OtherSchema(rawSchema=str(table.schema())),
             fields=schema_fields,
         )
         return schema_metadata
@@ -304,12 +306,12 @@ class IcebergSource(StatefulIngestionSourceBase):
     def _get_schema_fields_for_column(
         self,
         column: NestedField,
-    ) -> Generator[SchemaField, None, None]:
+    ) -> List[SchemaField]:
         avro_schema = self._get_avro_schema_from_column(column)
         schema_fields = schema_util.avro_schema_to_mce_fields(
             json.dumps(avro_schema), default_nullable=column.optional
         )
-        yield from schema_fields
+        return schema_fields
 
     def _get_avro_schema_from_column(self, column: NestedField) -> Dict[str, Any]:
         """
@@ -406,7 +408,7 @@ def _parse_basic_datatype(type: PrimitiveType, nullable: bool) -> Dict[str, Any]
         if isinstance(type, iceberg_type):
             return {
                 "type": _all_atomic_types[iceberg_type],
-                "native_data_type": repr(type),
+                "native_data_type": str(type),
                 "_nullable": nullable,
             }
 
@@ -416,7 +418,7 @@ def _parse_basic_datatype(type: PrimitiveType, nullable: bool) -> Dict[str, Any]
             "type": "fixed",
             "name": _gen_name("__fixed_"),
             "size": len(type),
-            "native_data_type": repr(type),
+            "native_data_type": str(type),
             "_nullable": nullable,
         }
 
@@ -433,28 +435,28 @@ def _parse_basic_datatype(type: PrimitiveType, nullable: bool) -> Dict[str, Any]
             "logicalType": "decimal",
             "precision": type.precision,
             "scale": type.scale,
-            "native_data_type": repr(type),
+            "native_data_type": str(type),
             "_nullable": nullable,
         }
     elif isinstance(type, UUIDType):
         return {
             "type": "string",
             "logicalType": "uuid",
-            "native_data_type": repr(type),
+            "native_data_type": str(type),
             "_nullable": nullable,
         }
     elif isinstance(type, DateType):
         return {
             "type": "int",
             "logicalType": "date",
-            "native_data_type": repr(type),
+            "native_data_type": str(type),
             "_nullable": nullable,
         }
     elif isinstance(type, TimeType):
         return {
             "type": "long",
             "logicalType": "time-micros",
-            "native_data_type": repr(type),
+            "native_data_type": str(type),
             "_nullable": nullable,
         }
     elif isinstance(type, (TimestampType, TimestamptzType)):
@@ -470,11 +472,11 @@ def _parse_basic_datatype(type: PrimitiveType, nullable: bool) -> Dict[str, Any]
             # "logicalType": "timestamp-micros"
             # if timestamp_type.adjust_to_utc
             # else "local-timestamp-micros",
-            "native_data_type": repr(type),
+            "native_data_type": str(type),
             "_nullable": nullable,
         }
 
-    return {"type": "null", "native_data_type": repr(type)}
+    return {"type": "null", "native_data_type": str(type)}
 
 
 def _gen_name(prefix: str) -> str:
