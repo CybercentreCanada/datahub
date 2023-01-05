@@ -1,5 +1,4 @@
-from pathlib import PosixPath
-from typing import Any, Dict, Optional, Union, cast
+from typing import Any, Dict, Optional, cast
 from unittest.mock import patch
 
 import pytest
@@ -180,7 +179,9 @@ def test_iceberg_stateful_ingest(pytestconfig, tmp_path, mock_time, mock_datahub
 
 @freeze_time(FROZEN_TIME)
 @pytest.mark.integration
-@pytest.mark.skip(reason="Implement this test when a proper integration test suite is done using docker.")
+@pytest.mark.skip(
+    reason="Implement this test when a proper integration test suite is done using docker."
+)
 def test_iceberg_profiling(pytestconfig, tmp_path, mock_time):
     """
     This test is using a table created using https://github.com/tabular-io/docker-spark-iceberg.
@@ -199,7 +200,9 @@ def test_iceberg_profiling(pytestconfig, tmp_path, mock_time):
     When importing the metadata files into this test, we need to create a `version-hint.text` with a value that
     reflects the version of the table, and then change the code in `TestLocalFileSystem._replace_path()` accordingly.
     """
-    test_resources_dir = pytestconfig.rootpath / "tests/integration/iceberg/test_data/profiling_test"
+    test_resources_dir = (
+        pytestconfig.rootpath / "tests/integration/iceberg/test_data/profiling_test"
+    )
 
     # Run the metadata ingestion pipeline.
     pipeline = Pipeline.create(

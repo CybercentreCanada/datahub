@@ -1,6 +1,7 @@
 from typing import Any, Optional
 
 import pytest
+from pyiceberg.schema import Schema
 from pyiceberg.types import (
     BinaryType,
     BooleanType,
@@ -208,7 +209,8 @@ def test_iceberg_primitive_type_to_schema_field(
             1, "optional_field", iceberg_type, False, "optional field documentation"
         ),
     ]:
-        schema_fields = iceberg_source_instance._get_schema_fields_for_column(column)
+        schema = Schema(column)
+        schema_fields = iceberg_source_instance._get_schema_fields_for_schema(schema)
         assert (
             len(schema_fields) == 1
         ), f"Expected 1 field, but got {len(schema_fields)}"
@@ -254,26 +256,52 @@ def test_iceberg_list_to_schema_field(
     """
     Test converting a list typed Iceberg field to an ArrayType SchemaField, including the list nested type.
     """
-    list_column = NestedField(
-        1,
-        "listField",
-        ListType(2, iceberg_type, True),
-        True,
-        "documentation",
-    )
-    iceberg_source_instance = with_iceberg_source()
-    schema_fields = iceberg_source_instance._get_schema_fields_for_column(list_column)
-    assert len(schema_fields) == 1, f"Expected 1 field, but got {len(schema_fields)}"
-    assert_field(
-        schema_fields[0], list_column.doc, list_column.optional, ArrayTypeClass
-    )
-    assert isinstance(
-        schema_fields[0].type.type, ArrayType
-    ), f"Field type {schema_fields[0].type.type} was expected to be {ArrayType}"
-    arrayType: ArrayType = schema_fields[0].type.type
-    assert arrayType.nestedType == [
-        expected_array_nested_type
-    ], f"List Field nested type {arrayType.nestedType} was expected to be {expected_array_nested_type}"
+    for list_column in [
+        NestedField(
+            1,
+            "listField",
+            ListType(2, iceberg_type, True),
+            True,
+            "required field, required element documentation",
+        ),
+        NestedField(
+            1,
+            "listField",
+            ListType(2, iceberg_type, False),
+            True,
+            "required field, optional element documentation",
+        ),
+        NestedField(
+            1,
+            "listField",
+            ListType(2, iceberg_type, True),
+            False,
+            "optional field, required element documentation",
+        ),
+        NestedField(
+            1,
+            "listField",
+            ListType(2, iceberg_type, False),
+            False,
+            "optional field, optional element documentation",
+        ),
+    ]:
+        iceberg_source_instance = with_iceberg_source()
+        schema = Schema(list_column)
+        schema_fields = iceberg_source_instance._get_schema_fields_for_schema(schema)
+        assert (
+            len(schema_fields) == 1
+        ), f"Expected 1 field, but got {len(schema_fields)}"
+        assert_field(
+            schema_fields[0], list_column.doc, list_column.optional, ArrayTypeClass
+        )
+        assert isinstance(
+            schema_fields[0].type.type, ArrayType
+        ), f"Field type {schema_fields[0].type.type} was expected to be {ArrayType}"
+        arrayType: ArrayType = schema_fields[0].type.type
+        assert arrayType.nestedType == [
+            expected_array_nested_type
+        ], f"List Field nested type {arrayType.nestedType} was expected to be {expected_array_nested_type}"
 
 
 @pytest.mark.parametrize(
@@ -313,25 +341,58 @@ def test_iceberg_map_to_schema_field(
     """
     Test converting a map typed Iceberg field to a MapType SchemaField, where the key is the same type as the value.
     """
-    map_column = NestedField(
-        1,
-        "mapField",
-        MapType(11, iceberg_type, 12, iceberg_type, True),
-        True,
-        "documentation",
-    )
-    iceberg_source_instance = with_iceberg_source()
-    schema_fields = iceberg_source_instance._get_schema_fields_for_column(map_column)
-    # Converting an Iceberg Map type will be done by creating an array of struct(key, value) records.
-    # The first field will be the array.
-    assert len(schema_fields) == 3, f"Expected 3 fields, but got {len(schema_fields)}"
-    assert_field(schema_fields[0], map_column.doc, map_column.optional, ArrayTypeClass)
+    for map_column in [
+        NestedField(
+            1,
+            "mapField",
+            MapType(11, iceberg_type, 12, iceberg_type, True),
+            True,
+            "required field, required value documentation",
+        ),
+        NestedField(
+            1,
+            "mapField",
+            MapType(11, iceberg_type, 12, iceberg_type, False),
+            True,
+            "required field, optional value documentation",
+        ),
+        NestedField(
+            1,
+            "mapField",
+            MapType(11, iceberg_type, 12, iceberg_type, True),
+            False,
+            "optional field, required value documentation",
+        ),
+        NestedField(
+            1,
+            "mapField",
+            MapType(11, iceberg_type, 12, iceberg_type, False),
+            False,
+            "optional field, optional value documentation",
+        ),
+    ]:
+        iceberg_source_instance = with_iceberg_source()
+        schema = Schema(map_column)
+        schema_fields = iceberg_source_instance._get_schema_fields_for_schema(schema)
+        # Converting an Iceberg Map type will be done by creating an array of struct(key, value) records.
+        # The first field will be the array.
+        assert (
+            len(schema_fields) == 3
+        ), f"Expected 3 fields, but got {len(schema_fields)}"
+        assert_field(
+            schema_fields[0], map_column.doc, map_column.optional, ArrayTypeClass
+        )
 
-    # The second field will be the key type
-    assert_field(schema_fields[1], None, False, expected_map_type)
+        # The second field will be the key type
+        assert_field(schema_fields[1], None, False, expected_map_type)
 
-    # The third field will be the value type
-    assert_field(schema_fields[2], None, True, expected_map_type)
+        # The third field will be the value type
+        assert_field(
+            schema_fields[2],
+            None,
+            not map_column.field_type.value_required,
+            expected_map_type,
+        )
 
 
 @pytest.mark.parametrize(
@@ -376,7 +437,8 @@ def test_iceberg_struct_to_schema_field(
         1, "structField", StructType(field1), True, "struct documentation"
     )
     iceberg_source_instance = with_iceberg_source()
-    schema_fields = iceberg_source_instance._get_schema_fields_for_column(struct_column)
+    schema = Schema(struct_column)
+    schema_fields = iceberg_source_instance._get_schema_fields_for_schema(schema)
     assert len(schema_fields) == 2, f"Expected 2 fields, but got {len(schema_fields)}"
     assert_field(
         schema_fields[0], struct_column.doc, struct_column.optional, RecordTypeClass

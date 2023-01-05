@@ -109,6 +109,21 @@ class IcebergSourceConfig(StatefulIngestionConfigBase):
         return values
 
     def load_table(self, table_name: str, table_location: str) -> Table:
+        """Once Iceberg catalog support is added to this source, this method will be obsolete.
+
+        Args:
+            table_name (str): Name of the Iceberg table
+            table_location (str): Location of Iceberg table
+
+        Raises:
+            NoSuchIcebergTableError: If an Iceberg table could not be loaded from the specified location
+
+        Returns:
+            Table: An Iceberg table instance
+        """
+        table_location = (
+            self.adls.get_abfss_url(table_location) if self.adls else table_location
+        )
         io = load_file_io(
             properties={**vars(self.adls)} if self.adls else {},
             location=table_location,
@@ -121,7 +136,6 @@ class IcebergSourceConfig(StatefulIngestionConfigBase):
             metadata_file = io.new_input(metadata_location)
             metadata = FromInputFile.table_metadata(metadata_file)
             return Table(
-                # identifier=(table.dbName, table.tableName),
                 identifier=table_name,
                 metadata=metadata,
                 metadata_location=metadata_location,

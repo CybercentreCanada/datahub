@@ -1,9 +1,10 @@
 import json
 import logging
 import uuid
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional
 
 from pyiceberg.exceptions import NoSuchIcebergTableError
+from pyiceberg.schema import Schema, SchemaVisitorPerPrimitiveType, visit
 from pyiceberg.table import Table
 from pyiceberg.types import (
     BinaryType,
@@ -13,13 +14,11 @@ from pyiceberg.types import (
     DoubleType,
     FixedType,
     FloatType,
-    IcebergType,
     IntegerType,
     ListType,
     LongType,
     MapType,
     NestedField,
-    PrimitiveType,
     StringType,
     StructType,
     TimestampType,
@@ -288,11 +287,7 @@ class IcebergSource(StatefulIngestionSourceBase):
     def _create_schema_metadata(
         self, dataset_name: str, table: Table
     ) -> SchemaMetadata:
-        schema_fields = [
-            f
-            for c in table.schema().columns
-            for f in self._get_schema_fields_for_column(c)
-        ]
+        schema_fields = self._get_schema_fields_for_schema(table.schema())
         schema_metadata = SchemaMetadata(
             schemaName=dataset_name,
             platform=make_data_platform_urn(self.platform),
@@ -303,34 +298,15 @@ class IcebergSource(StatefulIngestionSourceBase):
         )
         return schema_metadata
 
-    def _get_schema_fields_for_column(
+    def _get_schema_fields_for_schema(
         self,
-        column: NestedField,
+        schema: Schema,
     ) -> List[SchemaField]:
-        avro_schema = self._get_avro_schema_from_column(column)
+        avro_schema = visit(schema, ToAvroSchemaIcebergVisitor())
         schema_fields = schema_util.avro_schema_to_mce_fields(
-            json.dumps(avro_schema), default_nullable=column.optional
+            json.dumps(avro_schema), default_nullable=False
         )
         return schema_fields
-
-    def _get_avro_schema_from_column(self, column: NestedField) -> Dict[str, Any]:
-        """
-        See Iceberg documentation for Avro mapping:
-        https://iceberg.apache.org/#spec/#appendix-a-format-specific-requirements
-        """
-        # The record structure represents the dataset level.
-        # The inner fields represent the complex field (struct/array/map/union).
-        return {
-            "type": "record",
-            "name": "__struct_",
-            "fields": [
-                {
-                    "name": column.name,
-                    "type": _parse_datatype(column.field_type, column.optional),
-                    "doc": column.doc,
-                }
-            ],
-        }
 
     def get_platform_instance_id(self) -> str:
         assert self.config.platform_instance is not None
@@ -340,126 +316,146 @@ class IcebergSource(StatefulIngestionSourceBase):
         return self.report
 
 
-def _parse_datatype(type: IcebergType, nullable: bool = False) -> Dict[str, Any]:
-    # Check for complex types: struct, list, map
-    if isinstance(type, ListType):
+class ToAvroSchemaIcebergVisitor(SchemaVisitorPerPrimitiveType[Dict[str, Any]]):
+    """Implementation of a visitor to build an Avro schema as a dictionary from an Iceberg schema."""
+
+    @staticmethod
+    def _gen_name(prefix: str) -> str:
+        return f"{prefix}{str(uuid.uuid4()).replace('-', '')}"
+
+    def schema(self, schema: Schema, struct_result: Dict[str, Any]) -> Dict[str, Any]:
+        return struct_result
+
+    def struct(
+        self, struct: StructType, field_results: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        nullable = True
         return {
-            "type": "array",
-            "items": _parse_datatype(type.element_type),
-            "native_data_type": str(type),
+            "type": "record",
+            "name": self._gen_name("__struct_"),
+            "fields": field_results,
+            "native_data_type": str(struct),
             "_nullable": nullable,
         }
-    elif isinstance(type, MapType):
+
+    def field(self, field: NestedField, field_result: Dict[str, Any]) -> Dict[str, Any]:
+        field_result["_nullable"] = not field.required
+        return {
+            "name": field.name,
+            "type": field_result,
+            "doc": field.doc,
+        }
+
+    def list(
+        self, list_type: ListType, element_result: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        return {
+            "type": "array",
+            "items": element_result,
+            "native_data_type": str(list_type),
+            "_nullable": not list_type.element_required,
+        }
+
+    def map(
+        self,
+        map_type: MapType,
+        key_result: Dict[str, Any],
+        value_result: Dict[str, Any],
+    ) -> Dict[str, Any]:
         # The Iceberg Map type will be handled differently.  The idea is to translate the map
         # similar to the Map.Entry struct of Java i.e. as an array of map_entry struct, where
         # the map_entry struct has a key field and a value field. The key and value type can
         # be complex or primitive types.
+        key_result["_nullable"] = False
+        value_result["_nullable"] = not map_type.value_required
         map_entry = {
             "type": "record",
-            "name": _gen_name("__map_entry_"),
+            "name": self._gen_name("__map_entry_"),
             "fields": [
                 {
                     "name": "key",
-                    "type": _parse_datatype(type.key_type, False),
+                    "type": key_result,
                 },
                 {
                     "name": "value",
-                    "type": _parse_datatype(type.value_type, True),
+                    "type": value_result,
                 },
             ],
         }
         return {
             "type": "array",
             "items": map_entry,
-            "native_data_type": str(type),
-            "_nullable": nullable,
+            "native_data_type": str(map_type),
         }
-    elif isinstance(type, StructType):
-        return _parse_struct_fields(type.fields, nullable)
-    else:
-        # Primitive types
-        return _parse_basic_datatype(type, nullable)
 
-
-def _parse_struct_fields(parts: Tuple[NestedField], nullable: bool) -> Dict[str, Any]:
-    fields = [
-        {
-            "name": f.name,
-            "type": _parse_datatype(f.field_type, f.optional),
-            "doc": f.doc,
-        }
-        for f in parts
-    ]
-    return {
-        "type": "record",
-        "name": _gen_name("__struct_"),
-        "fields": fields,
-        "native_data_type": f"struct<{parts}>",
-        "_nullable": nullable,
-    }
-
-
-def _parse_basic_datatype(type: PrimitiveType, nullable: bool) -> Dict[str, Any]:
-    """
-    See https://iceberg.apache.org/#spec/#avro
-    """
-    # Check for an atomic types.
-    for iceberg_type in _all_atomic_types.keys():
-        if isinstance(type, iceberg_type):
-            return {
-                "type": _all_atomic_types[iceberg_type],
-                "native_data_type": str(type),
-                "_nullable": nullable,
-            }
-
-    # Fixed is a special case where it is not an atomic type and not a logical type.
-    if isinstance(type, FixedType):
+    def visit_fixed(self, fixed_type: FixedType) -> Dict[str, Any]:
         return {
             "type": "fixed",
-            "name": _gen_name("__fixed_"),
-            "size": len(type),
-            "native_data_type": str(type),
-            "_nullable": nullable,
+            "name": self._gen_name("__fixed_"),
+            "size": len(fixed_type),
+            "native_data_type": str(fixed_type),
         }
 
-    # Not an atomic type, so check for a logical type.
-    if isinstance(type, DecimalType):
+    def visit_decimal(self, decimal_type: DecimalType) -> Dict[str, Any]:
         # Also of interest: https://avro.apache.org/docs/current/spec.html#Decimal
         return {
             # "type": "bytes", # when using bytes, avro drops _nullable attribute and others.  See unit test.
             "type": "fixed",  # to fix avro bug ^ resolved by using a fixed type
-            "name": _gen_name(
+            "name": self._gen_name(
                 "__fixed_"
             ),  # to fix avro bug ^ resolved by using a fixed type
             "size": 1,  # to fix avro bug ^ resolved by using a fixed type
             "logicalType": "decimal",
-            "precision": type.precision,
-            "scale": type.scale,
-            "native_data_type": str(type),
-            "_nullable": nullable,
+            "precision": decimal_type.precision,
+            "scale": decimal_type.scale,
+            "native_data_type": str(decimal_type),
         }
-    elif isinstance(type, UUIDType):
+
+    def visit_boolean(self, boolean_type: BooleanType) -> Dict[str, Any]:
         return {
-            "type": "string",
-            "logicalType": "uuid",
-            "native_data_type": str(type),
-            "_nullable": nullable,
+            "type": "boolean",
+            "native_data_type": str(boolean_type),
         }
-    elif isinstance(type, DateType):
+
+    def visit_integer(self, integer_type: IntegerType) -> Dict[str, Any]:
+        return {
+            "type": "int",
+            "native_data_type": str(integer_type),
+        }
+
+    def visit_long(self, long_type: LongType) -> Dict[str, Any]:
+        return {
+            "type": "long",
+            "native_data_type": str(long_type),
+        }
+
+    def visit_float(self, float_type: FloatType) -> Dict[str, Any]:
+        return {
+            "type": "float",
+            "native_data_type": str(float_type),
+        }
+
+    def visit_double(self, double_type: DoubleType) -> Dict[str, Any]:
+        return {
+            "type": "double",
+            "native_data_type": str(double_type),
+        }
+
+    def visit_date(self, date_type: DateType) -> Dict[str, Any]:
         return {
             "type": "int",
             "logicalType": "date",
-            "native_data_type": str(type),
-            "_nullable": nullable,
+            "native_data_type": str(date_type),
         }
-    elif isinstance(type, TimeType):
+
+    def visit_time(self, time_type: TimeType) -> Dict[str, Any]:
         return {
             "type": "long",
             "logicalType": "time-micros",
-            "native_data_type": str(type),
-            "_nullable": nullable,
+            "native_data_type": str(time_type),
         }
-    elif isinstance(type, (TimestampType, TimestamptzType)):
+
+    def visit_timestamp(self, timestamp_type: TimestampType) -> Dict[str, Any]:
         # Avro supports 2 types of timestamp:
         #  - Timestamp: independent of a particular timezone or calendar (TZ information is lost)
         #  - Local Timestamp: represents a timestamp in a local timezone, regardless of what specific time zone is considered local
@@ -472,12 +468,40 @@ def _parse_basic_datatype(type: PrimitiveType, nullable: bool) -> Dict[str, Any]
             # "logicalType": "timestamp-micros"
             # if timestamp_type.adjust_to_utc
             # else "local-timestamp-micros",
-            "native_data_type": str(type),
-            "_nullable": nullable,
+            "native_data_type": str(timestamp_type),
         }
 
-    return {"type": "null", "native_data_type": str(type)}
+    def visit_timestampz(self, timestamptz_type: TimestamptzType) -> Dict[str, Any]:
+        # Avro supports 2 types of timestamp:
+        #  - Timestamp: independent of a particular timezone or calendar (TZ information is lost)
+        #  - Local Timestamp: represents a timestamp in a local timezone, regardless of what specific time zone is considered local
+        # utcAdjustment: bool = True
+        return {
+            "type": "long",
+            "logicalType": "timestamp-micros",
+            # Commented out since Avro's Python implementation (1.11.0) does not support local-timestamp-micros, even though it exists in the spec.
+            # See bug report: https://issues.apache.org/jira/browse/AVRO-3476 and PR https://github.com/apache/avro/pull/1634
+            # "logicalType": "timestamp-micros"
+            # if timestamp_type.adjust_to_utc
+            # else "local-timestamp-micros",
+            "native_data_type": str(timestamptz_type),
+        }
 
+    def visit_string(self, string_type: StringType) -> Dict[str, Any]:
+        return {
+            "type": "string",
+            "native_data_type": str(string_type),
+        }
 
-def _gen_name(prefix: str) -> str:
-    return f"{prefix}{str(uuid.uuid4()).replace('-', '')}"
+    def visit_uuid(self, uuid_type: UUIDType) -> Dict[str, Any]:
+        return {
+            "type": "string",
+            "logicalType": "uuid",
+            "native_data_type": str(uuid_type),
+        }
+
+    def visit_binary(self, binary_type: BinaryType) -> Dict[str, Any]:
+        return {
+            "type": "bytes",
+            "native_data_type": str(binary_type),
+        }
