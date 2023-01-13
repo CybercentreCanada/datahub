@@ -4,6 +4,7 @@ from typing import Callable, Dict, Iterable, List, Optional, Tuple
 import pydantic
 from fsspec import AbstractFileSystem, filesystem
 from pydantic import Field, root_validator
+from pyiceberg.catalog import Catalog, load_catalog
 from pyiceberg.exceptions import NoSuchIcebergTableError
 from pyiceberg.io import FileIO, load_file_io
 from pyiceberg.serializers import FromInputFile
@@ -50,7 +51,28 @@ class IcebergProfilingConfig(ConfigModel):
     # include_field_sample_values: bool = True
 
 
-class IcebergSourceConfig(StatefulIngestionConfigBase):
+class IcebergSourceStatefulIngestionConfig(StatefulStaleMetadataRemovalConfig):
+    """Iceberg custom stateful ingestion config definition(overrides _entity_types of StatefulStaleMetadataRemovalConfig)."""
+
+    _entity_types: List[str] = pydantic.Field(default=["table"])
+
+
+class IcebergCatalogConfig(ConfigModel):
+    """
+    Iceberg catalog config.
+
+    https://py.iceberg.apache.org/configuration/
+    """
+
+    name: str = Field(
+        description="Name of catalog",
+    )
+    conf: Dict[str, str] = Field(
+        description="Catalog specific configuration.  See [PyIceberg documentation](https://py.iceberg.apache.org/configuration/) for details.",
+    )
+
+
+class IcebergSourceConfig(StatefulIngestionConfigBase, DatasetSourceConfigBase):
     # Override the stateful_ingestion config param with the Iceberg custom stateful ingestion config in the IcebergSourceConfig
     stateful_ingestion: Optional[StatefulStaleMetadataRemovalConfig] = pydantic.Field(
         default=None, description="Iceberg Stateful Ingestion Config."
@@ -62,6 +84,10 @@ class IcebergSourceConfig(StatefulIngestionConfigBase):
     localfs: Optional[str] = Field(
         default=None,
         description="Local path to crawl for Iceberg tables. This is one filesystem type supported by this source and **only one can be configured**.",
+    )
+    catalog: Optional[IcebergCatalogConfig] = Field(
+        default=None,
+        description="Catalog configuration where to find Iceberg tables.",
     )
     max_path_depth: int = Field(
         default=2,
@@ -98,13 +124,24 @@ class IcebergSourceConfig(StatefulIngestionConfigBase):
     def _ensure_one_filesystem_is_configured(
         cls: "IcebergSourceConfig", values: Dict
     ) -> Dict:
-        if values.get("adls") and values.get("localfs"):
+        count = sum(
+            [
+                1
+                for x in [
+                    values.get("catalog"),
+                    values.get("adls"),
+                    values.get("localfs"),
+                ]
+                if x is not None
+            ]
+        )
+        if count == 0:
             raise ConfigurationError(
-                "Only one filesystem can be configured: adls or localfs"
+                "One filesystem (catalog or adls or localfs) needs to be configured."
             )
-        elif not values.get("adls") and not values.get("localfs"):
+        elif count > 1:
             raise ConfigurationError(
-                "One filesystem (adls or localfs) needs to be configured."
+                "Only one filesystem can be configured: catalog or adls or localfs"
             )
         return values
 
@@ -197,6 +234,13 @@ class IcebergSourceConfig(StatefulIngestionConfigBase):
             )
         else:
             raise ConfigurationError("No filesystem client configured")
+
+    def get_catalog(self) -> Catalog:
+        return (
+            load_catalog(name=self.catalog.name, **self.catalog.conf)
+            if self.catalog
+            else None
+        )
 
 
 @dataclass

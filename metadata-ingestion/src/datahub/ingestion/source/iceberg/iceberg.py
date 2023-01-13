@@ -155,15 +155,38 @@ class IcebergSource(StatefulIngestionSourceBase):
         )
 
     def get_workunits_internal(self) -> Iterable[MetadataWorkUnit]:
-        for dataset_path, dataset_name in self.config.get_paths():  # Tuple[str, str]
-            try:
+        catalog = self.config.get_catalog()
+        datasets = []
+        if catalog:
+            for namespace in catalog.list_namespaces():
+                for tableName in catalog.list_tables(namespace):
+                    dataset_name = ".".join(tableName)
+                    if not self.config.table_pattern.allowed(dataset_name):
+                        # Dataset name is rejected by pattern, report as dropped.
+                        self.report.report_dropped(dataset_name)
+                        continue
+                    else:
+                        datasets.append((tableName, dataset_name))
+        else:
+            # Will be obsolete once HadoopCatalog is supported by PyIceberg, or we migrate to REST catalog
+            for (
+                dataset_path,
+                dataset_name,
+            ) in self.config.get_paths():  # Tuple[str, str]
                 if not self.config.table_pattern.allowed(dataset_name):
-                    # Path is rejected by pattern, report as dropped.
+                    # Dataset name is rejected by pattern, report as dropped.
                     self.report.report_dropped(dataset_name)
                     continue
+                else:
+                    datasets.append((dataset_path, dataset_name))
 
+        for dataset_path, dataset_name in datasets:
+            try:
                 # Try to load an Iceberg table.  Might not contain one, this will be caught by NoSuchIcebergTableError.
-                table = self.config.load_table(dataset_name, dataset_path)
+                if isinstance(dataset_path, str):
+                    table = self.config.load_table(dataset_name, dataset_path)
+                else:
+                    table = catalog.load_table(dataset_path)
                 yield from self._create_iceberg_workunit(dataset_name, table)
                 dataset_urn: str = make_dataset_urn_with_platform_instance(
                     self.platform,

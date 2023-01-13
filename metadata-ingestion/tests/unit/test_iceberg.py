@@ -28,6 +28,7 @@ from datahub.configuration.common import ConfigurationError
 from datahub.ingestion.api.common import PipelineContext
 from datahub.ingestion.source.azure.azure_common import AdlsSourceConfig
 from datahub.ingestion.source.iceberg.iceberg import IcebergSource, IcebergSourceConfig
+from datahub.ingestion.source.iceberg.iceberg_common import IcebergCatalogConfig
 from datahub.metadata.com.linkedin.pegasus2avro.schema import ArrayType, SchemaField
 from datahub.metadata.schema_classes import (
     ArrayTypeClass,
@@ -153,10 +154,26 @@ def test_config_multiple_filesystems():
     """
     Test when more than 1 filesystem is configured.
     """
+    catalog = IcebergCatalogConfig(name="default", conf={})
+    adls = AdlsSourceConfig(
+        account_name="test", account_key="test", container_name="test"
+    )
     with pytest.raises(ConfigurationError):
-        adls: AdlsSourceConfig = AdlsSourceConfig(
-            account_name="test", container_name="test"
+        IcebergSource(
+            ctx=PipelineContext(run_id="iceberg-source-test"),
+            config=IcebergSourceConfig(catalog=catalog, adls=adls, localfs="/tmp"),
         )
+    with pytest.raises(ConfigurationError):
+        IcebergSource(
+            ctx=PipelineContext(run_id="iceberg-source-test"),
+            config=IcebergSourceConfig(catalog=catalog, adls=adls),
+        )
+    with pytest.raises(ConfigurationError):
+        IcebergSource(
+            ctx=PipelineContext(run_id="iceberg-source-test"),
+            config=IcebergSourceConfig(catalog=catalog, localfs="/tmp"),
+        )
+    with pytest.raises(ConfigurationError):
         IcebergSource(
             ctx=PipelineContext(run_id="iceberg-source-test"),
             config=IcebergSourceConfig(adls=adls, localfs="/tmp"),
