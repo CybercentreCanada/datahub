@@ -35,7 +35,7 @@
         "launch": {
             "configurations": [
                 {
-                    "name": "datahub ingest",
+                    "name": "Datahub Ingest",
                     "type": "python",
                     "request": "launch",
                     "program": "${workspaceRoot}/repositories/datahub/smoke-test/venv/bin/datahub",
@@ -43,15 +43,6 @@
                     "args": ["ingest", "-c", "${file}"],
                     "cwd": "${workspaceRoot}/repositories/datahub/metadata-ingestion",
                     "envFile": "${workspaceFolder}/scratch/datahub/.env",
-                    "console": "integratedTerminal",
-                    "justMyCode": false
-                },
-                {
-                    "name": "Python: Debug Tests",
-                    "type": "python",
-                    "request": "launch",
-                    "program": "${file}",
-                    "purpose": ["debug-test"],
                     "console": "integratedTerminal",
                     "justMyCode": false
                 }
