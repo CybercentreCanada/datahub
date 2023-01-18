@@ -39,7 +39,6 @@
                     "type": "python",
                     "request": "launch",
                     "program": "${workspaceRoot}/repositories/datahub/smoke-test/venv/bin/datahub",
-                    // "args": ["ingest", "-c", "${workspaceRoot}/scratch/recipes/dbt_test.yaml"],
                     "args": ["ingest", "-c", "${file}"],
                     "cwd": "${workspaceRoot}/repositories/datahub/metadata-ingestion",
                     "envFile": "${workspaceFolder}/scratch/datahub/.env",
