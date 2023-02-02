@@ -30,7 +30,9 @@ steps:
       cp ./metadata-service/war/build/libs/war.war .
     displayName: Build Datahub's backend GMS
   - bash: |
-      ./gradlew :datahub-frontend:dist -x yarnTest -x yarnLint
+      export USE_SYSTEM_NODE="true"
+      ./gradlew :datahub-frontend:dist -PuseSystemNode=${USE_SYSTEM_NODE} -x test -x yarnTest -x yarnLint --parallel
+      cp ./datahub-frontend/build/distributions/datahub-frontend-*.zip datahub-frontend.zip
     displayName: Build Datahub's frontend
   - task: DockerCompose@0
     displayName: Docker Compose Build
