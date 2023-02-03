@@ -35,7 +35,7 @@ from datahub.ingestion.source.iceberg.iceberg_common import (
     IcebergSourceReport,
 )
 from datahub.ingestion.source.iceberg.iceberg_profiler import IcebergProfiler
-from datahub.ingestion.source.state.iceberg_state import IcebergCheckpointState
+from datahub.ingestion.source.state.entity_removal_state import GenericCheckpointState
 from datahub.ingestion.source.state.stale_entity_removal_handler import (
     StaleEntityRemovalHandler,
 )
@@ -51,12 +51,15 @@ from datahub.metadata.com.linkedin.pegasus2avro.schema import (
     SchemaMetadata,
 )
 from datahub.metadata.schema_classes import (
-    ChangeTypeClass,
     DataPlatformInstanceClass,
     DatasetPropertiesClass,
     OwnerClass,
     OwnershipClass,
     OwnershipTypeClass,
+)
+from datahub.utilities.source_helpers import (
+    auto_stale_entity_removal,
+    auto_status_aspect,
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -119,7 +122,7 @@ class IcebergSource(StatefulIngestionSourceBase):
         self.stale_entity_removal_handler = StaleEntityRemovalHandler(
             source=self,
             config=self.config,
-            state_type_class=IcebergCheckpointState,
+            state_type_class=GenericCheckpointState,
             pipeline_name=self.ctx.pipeline_name,
             run_id=self.ctx.run_id,
         )
@@ -130,6 +133,12 @@ class IcebergSource(StatefulIngestionSourceBase):
         return cls(config, ctx)
 
     def get_workunits(self) -> Iterable[MetadataWorkUnit]:
+        return auto_stale_entity_removal(
+            self.stale_entity_removal_handler,
+            auto_status_aspect(self.get_workunits_internal()),
+        )
+
+    def get_workunits_internal(self) -> Iterable[MetadataWorkUnit]:
         for dataset_path, dataset_name in self.config.get_paths():  # Tuple[str, str]
             try:
                 if not self.config.table_pattern.allowed(dataset_name):
@@ -140,15 +149,6 @@ class IcebergSource(StatefulIngestionSourceBase):
                 # Try to load an Iceberg table.  Might not contain one, this will be caught by NoSuchTableException.
                 table: Table = self.iceberg_client.load(dataset_path)
                 yield from self._create_iceberg_workunit(dataset_name, table)
-                dataset_urn: str = make_dataset_urn_with_platform_instance(
-                    self.platform,
-                    dataset_name,
-                    self.config.platform_instance,
-                    self.config.env,
-                )
-                self.stale_entity_removal_handler.add_entity_to_state(
-                    type="table", urn=dataset_urn
-                )
             except NoSuchTableException:
                 # Path did not contain a valid Iceberg table. Silently ignore this.
                 LOGGER.debug(
@@ -162,9 +162,6 @@ class IcebergSource(StatefulIngestionSourceBase):
                 LOGGER.warning(
                     f"Exception while processing table {dataset_path}, skipping it.",
                 )
-
-        # Clean up stale entities at the end
-        yield from self.stale_entity_removal_handler.gen_removed_entity_workunits()
 
     def _create_iceberg_workunit(
         self, dataset_name: str, table: Table
@@ -253,10 +250,7 @@ class IcebergSource(StatefulIngestionSourceBase):
         # If we are a platform instance based source, emit the instance aspect
         if self.config.platform_instance:
             mcp = MetadataChangeProposalWrapper(
-                entityType="dataset",
-                changeType=ChangeTypeClass.UPSERT,
                 entityUrn=dataset_urn,
-                aspectName="dataPlatformInstance",
                 aspect=DataPlatformInstanceClass(
                     platform=make_data_platform_urn(self.platform),
                     instance=make_dataplatform_instance_urn(
@@ -332,9 +326,6 @@ class IcebergSource(StatefulIngestionSourceBase):
 
     def get_report(self) -> SourceReport:
         return self.report
-
-    def close(self) -> None:
-        self.prepare_for_commit()
 
 
 def _parse_datatype(type: IcebergTypes.Type, nullable: bool = False) -> Dict[str, Any]:
