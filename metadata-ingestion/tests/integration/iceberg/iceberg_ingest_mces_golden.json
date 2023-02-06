@@ -16,6 +16,7 @@
                                 "created-at": "2023-01-09T16:10:37.115997100Z",
                                 "write.format.default": "parquet",
                                 "location": "s3a://warehouse/wh/nyc/taxis",
+                                "format-version": "1",
                                 "snapshot-id": "1023498847080782840",
                                 "manifest-list": "s3a://warehouse/wh/nyc/taxis/metadata/snap-1023498847080782840-1-cd5fb158-a88b-4e94-92de-cbbccd2ac705.avro"
                             },

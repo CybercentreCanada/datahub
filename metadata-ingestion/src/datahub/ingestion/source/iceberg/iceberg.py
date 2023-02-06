@@ -228,6 +228,7 @@ class IcebergSource(StatefulIngestionSourceBase):
         # Dataset properties aspect.
         custom_properties = table.metadata.properties.copy()
         custom_properties["location"] = table.metadata.location
+        custom_properties["format-version"] = str(table.metadata.format_version)
         if table.current_snapshot():
             custom_properties["snapshot-id"] = str(table.current_snapshot().snapshot_id)
             custom_properties["manifest-list"] = table.current_snapshot().manifest_list
