@@ -147,7 +147,7 @@ class IcebergSourceConfig(StatefulIngestionConfigBase):
         return values
 
     def load_table(self, table_name: str, table_location: str) -> Table:
-        """Once Iceberg catalog support is added to this source, this method will be obsolete.
+        """Now that Iceberg catalog support has been added to this source, this method can be removed when we migrate away from HadoopCatalog.
 
         Args:
             table_name (str): Name of the Iceberg table
@@ -182,7 +182,7 @@ class IcebergSourceConfig(StatefulIngestionConfigBase):
         except FileNotFoundError as e:
             raise NoSuchIcebergTableError() from e
 
-    # Temporary until pyiceberg implements catalogs: https://github.com/apache/iceberg/issues/6430
+    # Temporary until we migrate away from HadoopCatalog (or pyiceberg implements https://github.com/apache/iceberg/issues/6430).
     def _read_version_hint(self, location: str, io: FileIO) -> int:
         version_hint_file = io.new_input(f"{location}/metadata/version-hint.text")
 
@@ -237,6 +237,11 @@ class IcebergSourceConfig(StatefulIngestionConfigBase):
             raise ConfigurationError("No filesystem client configured")
 
     def get_catalog(self) -> Catalog:
+        """Returns the Iceberg catalog instance as configured by the `catalog` dictionary.
+
+        Returns:
+            Catalog: Iceberg catalog instance, `None` is not configured.
+        """
         return (
             load_catalog(name=self.catalog.name, **self.catalog.conf)
             if self.catalog

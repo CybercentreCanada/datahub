@@ -194,7 +194,6 @@ class IcebergProfiler:
         self.report.report_entity_profiled(dataset_name)
         yield wu
 
-    # The following will eventually be done by the Iceberg API (in the new Python refactored API).
     def _renderValue(
         self, dataset_name: str, value_type: IcebergType, value: Any
     ) -> Union[str, None]:
