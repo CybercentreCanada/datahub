@@ -199,7 +199,8 @@ microsoft_common = {"msal==1.16.0"}
 
 iceberg_common = {
     # Iceberg Python SDK
-    "pyiceberg==0.2.0",
+    "fsspec[abfs]==2022.10.0",
+    "pyiceberg[adlfs,s3fs]==0.3.0rc2",
     "azure-identity==1.10.0",
 }
 
