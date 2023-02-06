@@ -204,7 +204,7 @@ class IcebergSourceConfig(StatefulIngestionConfigBase):
             for sub_path in fs.ls(path, detail=True):
                 if sub_path["type"] == "directory":
                     dataset_name = ".".join(
-                        sub_path["name"][len(root_path) + 1 :].split("/")
+                        s for s in strltrim(sub_path["name"], root_path).split("/") if s
                     )
                     yield fix_path(sub_path["name"]), dataset_name
                     yield from self._get_paths(
