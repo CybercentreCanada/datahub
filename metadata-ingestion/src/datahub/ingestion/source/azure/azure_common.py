@@ -1,6 +1,5 @@
-from typing import Dict, Optional, Union
+from typing import Dict, Optional
 
-from azure.identity import ClientSecretCredential
 from pydantic import Field, root_validator
 
 from datahub.configuration import ConfigModel
@@ -64,7 +63,6 @@ class AdlsSourceConfig(ConfigModel):
             "credentials missing, requires one combination of account_key or sas_token or (client_id and client_secret and tenant_id)"
         )
 
+
 def strltrim(to_trim: str, prefix: str) -> str:
-    return (to_trim[len(prefix) :]
-    if to_trim.startswith(prefix)
-    else to_trim)
+    return to_trim[len(prefix) :] if to_trim.startswith(prefix) else to_trim

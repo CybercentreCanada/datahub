@@ -24,6 +24,7 @@ from datahub.ingestion.source.state.stateful_ingestion_base import (
     StatefulIngestionConfigBase,
 )
 
+
 class IcebergProfilingConfig(ConfigModel):
     enabled: bool = Field(
         default=False,
@@ -72,7 +73,7 @@ class IcebergCatalogConfig(ConfigModel):
     )
 
 
-class IcebergSourceConfig(StatefulIngestionConfigBase, DatasetSourceConfigBase):
+class IcebergSourceConfig(StatefulIngestionConfigBase):
     # Override the stateful_ingestion config param with the Iceberg custom stateful ingestion config in the IcebergSourceConfig
     stateful_ingestion: Optional[StatefulStaleMetadataRemovalConfig] = pydantic.Field(
         default=None, description="Iceberg Stateful Ingestion Config."

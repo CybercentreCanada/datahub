@@ -124,7 +124,7 @@ sql_common = {
 
 aws_common = {
     # AWS Python SDK
-    "boto3",
+    "boto3==1.24.59",
     # Deal with a version incompatibility between botocore (used by boto3) and urllib3.
     # See https://github.com/boto/botocore/pull/2563.
     "botocore!=1.23.0",
@@ -199,7 +199,7 @@ microsoft_common = {"msal==1.16.0"}
 
 iceberg_common = {
     # Iceberg Python SDK
-    "fsspec[abfs]==2022.10.0",
+    "fsspec[abfs]==2023.1.0",
     "pyiceberg[adlfs,s3fs]==0.3.0rc2",
     "azure-identity==1.10.0",
 }
