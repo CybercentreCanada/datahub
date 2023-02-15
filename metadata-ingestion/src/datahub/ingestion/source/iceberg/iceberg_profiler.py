@@ -12,7 +12,6 @@ from pyiceberg.types import (
     IcebergType,
     IntegerType,
     LongType,
-    NestedField,
     TimestampType,
     TimestamptzType,
     TimeType,
@@ -59,10 +58,13 @@ class IcebergProfiler:
         manifest_values: Dict[int, Any],
     ) -> None:
         for field_id, value_encoded in manifest_values.items():  # type: int, Any
-            field: NestedField = schema.find_field(field_id)
-            # Bounds in manifests can reference historical field IDs that are not part of the current schema.
-            # We simply not profile those since we only care about the current snapshot.
-            if field and IcebergProfiler._is_numeric_type(field.field_type):
+            try:
+                field = schema.find_field(field_id)
+            except ValueError:
+                # Bounds in manifests can reference historical field IDs that are not part of the current schema.
+                # We simply not profile those since we only care about the current snapshot.
+                continue
+            if IcebergProfiler._is_numeric_type(field.field_type):
                 value_decoded = from_bytes(field.field_type, value_encoded)
                 if value_decoded:
                     agg_value = aggregated_values.get(field_id)
@@ -130,32 +132,28 @@ class IcebergProfiler:
         null_counts: Dict[int, int] = {}
         min_bounds: Dict[int, Any] = {}
         max_bounds: Dict[int, Any] = {}
-        try:
-            for manifest in current_snapshot.manifests(table.io):
-                for manifest_entry in manifest.fetch_manifest_entry(table.io):
-                    data_file = manifest_entry.data_file
-                    if self.config.include_field_null_count:
-                        null_counts = self._aggregate_counts(
-                            null_counts, data_file.null_value_counts
-                        )
-                    if self.config.include_field_min_value:
-                        self._aggregate_bounds(
-                            table.schema(),
-                            min,
-                            min_bounds,
-                            data_file.lower_bounds,
-                        )
-                    if self.config.include_field_max_value:
-                        self._aggregate_bounds(
-                            table.schema(),
-                            max,
-                            max_bounds,
-                            data_file.upper_bounds,
-                        )
-                    total_count += data_file.record_count
-        # TODO Work on error handling to provide better feedback.  Not sure about pyiceberg exceptions...
-        except Exception as e:
-            raise Exception("Error loading table manifests") from e
+        for manifest in current_snapshot.manifests(table.io):
+            for manifest_entry in manifest.fetch_manifest_entry(table.io):
+                data_file = manifest_entry.data_file
+                if self.config.include_field_null_count:
+                    null_counts = self._aggregate_counts(
+                        null_counts, data_file.null_value_counts
+                    )
+                if self.config.include_field_min_value:
+                    self._aggregate_bounds(
+                        table.schema(),
+                        min,
+                        min_bounds,
+                        data_file.lower_bounds,
+                    )
+                if self.config.include_field_max_value:
+                    self._aggregate_bounds(
+                        table.schema(),
+                        max,
+                        max_bounds,
+                        data_file.upper_bounds,
+                    )
+                total_count += data_file.record_count
         if row_count:
             # Iterating through fieldPaths introduces unwanted stats for list element fields...
             for field_path, field_id in table.schema()._name_to_id.items():
