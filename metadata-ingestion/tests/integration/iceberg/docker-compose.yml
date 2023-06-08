@@ -1,15 +1,8 @@
 version: "3"
 
-networks:
-  default:
-    ipam:
-      driver: default
-      config:
-        - subnet: 10.200.99.0/24
-
 services:
   spark-iceberg:
-    image: tabulario/spark-iceberg
+    image: tabulario/spark-iceberg:3.3.1_1.1.0
     container_name: spark-iceberg
     depends_on:
       - rest
@@ -51,10 +44,6 @@ services:
       - 9001:9001
       - 9000:9000
     command: ["server", "/data", "--console-address", ":9001"]
-    networks:
-      default:
-        aliases:
-          - warehouse.minio
   mc:
     depends_on:
       - minio

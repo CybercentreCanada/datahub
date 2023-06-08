@@ -260,8 +260,8 @@ class IcebergSource(StatefulIngestionSourceBase):
         if self.config.profiling.enabled:
             profiler = IcebergProfiler(self.report, self.config.profiling)
             yield from profiler.profile_table(dataset_name, dataset_urn, table)
-    
-    def _get_partition_aspect(self, table: Table) -> json:
+
+    def _get_partition_aspect(self, table: Table) -> str:
         partition_list = []
 
         for partition in table.spec().fields:
@@ -269,9 +269,13 @@ class IcebergSource(StatefulIngestionSourceBase):
 
             partition_object["name"] = str(partition.name)
             partition_object["transform"] = str(partition.transform)
-            partition_object["source"] = str(table.schema().find_column_name(partition.source_id))
+            partition_object["source"] = str(
+                table.schema().find_column_name(partition.source_id)
+            )
             partition_object["source-id"] = partition.source_id
-            partition_object["source-type"] = str(table.schema().find_type(partition.source_id))
+            partition_object["source-type"] = str(
+                table.schema().find_type(partition.source_id)
+            )
             partition_object["field-id"] = partition.field_id
 
             partition_list.append(partition_object)
