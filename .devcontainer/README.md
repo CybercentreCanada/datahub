@@ -25,6 +25,7 @@ pip install -r requirements.txt
 
 cd ../metadata-ingestion
 pip install -e '.[dev]'
+pip install -e '.[integration-tests]'
 ```
 2) Once the `venv` has been created in the `/datahub/smoke-test` directory, exit the virtual environment by using the `deactivate` command, and then traverse to the `/datahub` directory. Next, you need to build the front-end, back-end and cli tool:
 ```shell

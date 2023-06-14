@@ -229,6 +229,7 @@ class IcebergSource(StatefulIngestionSourceBase):
         custom_properties = table.metadata.properties.copy()
         custom_properties["location"] = table.metadata.location
         custom_properties["format-version"] = str(table.metadata.format_version)
+        custom_properties["partition-spec"] = str(self._get_partition_aspect(table))
         if table.current_snapshot():
             custom_properties["snapshot-id"] = str(table.current_snapshot().snapshot_id)
             custom_properties["manifest-list"] = table.current_snapshot().manifest_list
@@ -259,6 +260,27 @@ class IcebergSource(StatefulIngestionSourceBase):
         if self.config.profiling.enabled:
             profiler = IcebergProfiler(self.report, self.config.profiling)
             yield from profiler.profile_table(dataset_name, dataset_urn, table)
+
+    def _get_partition_aspect(self, table: Table) -> str:
+        partition_list = []
+
+        for partition in table.spec().fields:
+            partition_object = {}
+
+            partition_object["name"] = str(partition.name)
+            partition_object["transform"] = str(partition.transform)
+            partition_object["source"] = str(
+                table.schema().find_column_name(partition.source_id)
+            )
+            partition_object["source-id"] = partition.source_id
+            partition_object["source-type"] = str(
+                table.schema().find_type(partition.source_id)
+            )
+            partition_object["field-id"] = partition.field_id
+
+            partition_list.append(partition_object)
+
+        return json.dumps(partition_list)
 
     def _get_ownership_aspect(self, table: Table) -> Optional[OwnershipClass]:
         owners = []
