@@ -156,6 +156,8 @@ class IcebergProfiler:
                         )
                     total_count += data_file.record_count
         except Exception as e:
+            # Catch any errors that arise from attempting to read the Iceberg table's manifests
+            # This will prevent stateful ingestion from being blocked by an error (profiling is not critical)
             self.report.report_warning(
                 "profiling",
                 f"Error while profiling dataset {dataset_name}: {e}",
