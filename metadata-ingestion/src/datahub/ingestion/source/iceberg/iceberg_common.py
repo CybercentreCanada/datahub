@@ -3,6 +3,9 @@ from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
 import pydantic
 from fsspec import AbstractFileSystem, filesystem
+from azure.storage.filedatalake import FileSystemClient, PathProperties
+from iceberg.core.filesystem.abfss_filesystem import AbfssFileSystem
+from iceberg.core.filesystem.filesystem_tables import FilesystemTables
 from pydantic import Field, root_validator
 from pyiceberg.catalog import Catalog, load_catalog
 from pyiceberg.exceptions import NoSuchIcebergTableError
@@ -15,6 +18,7 @@ from datahub.configuration.common import (
     ConfigModel,
     ConfigurationError,
 )
+from datahub.configuration.source_common import DatasetSourceConfigMixin
 from datahub.ingestion.source.azure.azure_common import AdlsSourceConfig
 from datahub.ingestion.source.state.stale_entity_removal_handler import (
     StaleEntityRemovalSourceReport,
@@ -73,7 +77,7 @@ class IcebergCatalogConfig(ConfigModel):
     )
 
 
-class IcebergSourceConfig(StatefulIngestionConfigBase):
+class IcebergSourceConfig(StatefulIngestionConfigBase, DatasetSourceConfigMixin):
     # Override the stateful_ingestion config param with the Iceberg custom stateful ingestion config in the IcebergSourceConfig
     stateful_ingestion: Optional[StatefulStaleMetadataRemovalConfig] = pydantic.Field(
         default=None, description="Iceberg Stateful Ingestion Config."
@@ -260,10 +264,3 @@ class IcebergSourceReport(StaleEntityRemovalSourceReport):
 
     def report_dropped(self, ent_name: str) -> None:
         self.filtered.append(ent_name)
-
-    def report_entity_profiled(self, name: str) -> None:
-        self.entities_profiled += 1
-
-
-def strltrim(to_trim: str, prefix: str) -> str:
-    return to_trim[len(prefix) :] if to_trim.startswith(prefix) else to_trim

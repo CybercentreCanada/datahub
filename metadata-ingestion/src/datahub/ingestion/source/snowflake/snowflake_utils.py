@@ -7,8 +7,6 @@ from typing_extensions import Protocol
 
 from datahub.configuration.common import MetaError
 from datahub.configuration.pattern_utils import is_schema_allowed
-from datahub.emitter.mcp import MetadataChangeProposalWrapper
-from datahub.ingestion.api.workunit import MetadataWorkUnit
 from datahub.ingestion.source.snowflake.constants import (
     GENERIC_PERMISSION_ERROR_KEY,
     SNOWFLAKE_DEFAULT_CLOUD,
@@ -17,7 +15,6 @@ from datahub.ingestion.source.snowflake.constants import (
 )
 from datahub.ingestion.source.snowflake.snowflake_config import SnowflakeV2Config
 from datahub.ingestion.source.snowflake.snowflake_report import SnowflakeV2Report
-from datahub.metadata.schema_classes import _Aspect
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -106,7 +103,10 @@ class SnowflakeCommonMixin:
         self: SnowflakeCommonProtocol,
         dataset_name: Optional[str],
         dataset_type: Optional[str],
+        is_upstream: bool = False,
     ) -> bool:
+        if is_upstream and not self.config.validate_upstreams_against_patterns:
+            return True
         if not dataset_type or not dataset_name:
             return True
         dataset_params = dataset_name.split(".")
@@ -202,22 +202,8 @@ class SnowflakeCommonMixin:
         self: SnowflakeCommonProtocol, user_name: str, user_email: Optional[str]
     ) -> str:
         if user_email:
-            return user_email.split("@")[0]
+            return self.snowflake_identifier(user_email.split("@")[0])
         return self.snowflake_identifier(user_name)
-
-    def wrap_aspect_as_workunit(
-        self: SnowflakeCommonProtocol,
-        entityName: str,
-        entityUrn: str,
-        aspectName: str,
-        aspect: _Aspect,
-    ) -> MetadataWorkUnit:
-        wu = MetadataChangeProposalWrapper(
-            entityUrn=entityUrn,
-            aspect=aspect,
-        ).as_workunit()
-        self.report.report_workunit(wu)
-        return wu
 
     # TODO: Revisit this after stateful ingestion can commit checkpoint
     # for failures that do not affect the checkpoint

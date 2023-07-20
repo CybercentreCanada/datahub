@@ -1,16 +1,29 @@
 {
   "child_map": {
     "model.sample_dbt.customer_details": [
-      "model.sample_dbt.monthly_billing_with_cust"
+      "model.sample_dbt.monthly_billing_with_cust",
+      "test.sample_dbt.relationships_monthly_billing_with_cust_customer_id__customer_id__ref_customer_details_.653e08a90b"
     ],
-    "model.sample_dbt.monthly_billing_with_cust": [],
+    "model.sample_dbt.monthly_billing_with_cust": [
+      "test.sample_dbt.is_email_monthly_billing_with_cust_email.57a935ce99",
+      "test.sample_dbt.not_null_monthly_billing_with_cust_billing_month.19ce54289b",
+      "test.sample_dbt.not_null_monthly_billing_with_cust_email.d405c2cc13",
+      "test.sample_dbt.relationships_monthly_billing_with_cust_customer_id__customer_id__ref_customer_details_.653e08a90b"
+    ],
     "model.sample_dbt.payments_base": [
       "model.sample_dbt.payments_by_customer_by_month"
     ],
     "model.sample_dbt.payments_by_customer_by_month": [
       "model.sample_dbt.monthly_billing_with_cust"
     ],
-    "source.sample_dbt.pagila.actor": [],
+    "snapshot.sample_dbt.customer_snapshot": [
+      "model.sample_dbt.customer_details"
+    ],
+    "source.sample_dbt.pagila.actor": [
+      "test.sample_dbt.assert_source_actor_last_update_is_recent",
+      "test.sample_dbt.source_not_null_pagila_actor_actor_id.ad63829d3e",
+      "test.sample_dbt.source_unique_pagila_actor_actor_id.76aff1935a"
+    ],
     "source.sample_dbt.pagila.address": [
       "model.sample_dbt.customer_details"
     ],
@@ -20,7 +33,8 @@
     ],
     "source.sample_dbt.pagila.country": [],
     "source.sample_dbt.pagila.customer": [
-      "model.sample_dbt.customer_details"
+      "model.sample_dbt.customer_details",
+      "snapshot.sample_dbt.customer_snapshot"
     ],
     "source.sample_dbt.pagila.payment_p2020_01": [
       "model.sample_dbt.payments_base"
@@ -39,7 +53,14 @@
     ],
     "source.sample_dbt.pagila.payment_p2020_06": [
       "model.sample_dbt.payments_base"
-    ]
+    ],
+    "test.sample_dbt.assert_source_actor_last_update_is_recent": [],
+    "test.sample_dbt.is_email_monthly_billing_with_cust_email.57a935ce99": [],
+    "test.sample_dbt.not_null_monthly_billing_with_cust_billing_month.19ce54289b": [],
+    "test.sample_dbt.not_null_monthly_billing_with_cust_email.d405c2cc13": [],
+    "test.sample_dbt.relationships_monthly_billing_with_cust_customer_id__customer_id__ref_customer_details_.653e08a90b": [],
+    "test.sample_dbt.source_not_null_pagila_actor_actor_id.ad63829d3e": [],
+    "test.sample_dbt.source_unique_pagila_actor_actor_id.76aff1935a": []
   },
   "disabled": {},
   "docs": {
@@ -263,7 +284,7 @@
     },
     "macro.dbt.array_append": {
       "arguments": [],
-      "created_at": 1670298551.470447,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.default__array_append"
@@ -289,7 +310,7 @@
     },
     "macro.dbt.array_concat": {
       "arguments": [],
-      "created_at": 1670298551.4605079,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.default__array_concat"
@@ -315,7 +336,7 @@
     },
     "macro.dbt.array_construct": {
       "arguments": [],
-      "created_at": 1670298551.46897,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.default__array_construct"
@@ -393,7 +414,7 @@
     },
     "macro.dbt.build_config_dict": {
       "arguments": [],
-      "created_at": 1670298551.5360699,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": []
       },
@@ -417,7 +438,7 @@
     },
     "macro.dbt.build_ref_function": {
       "arguments": [],
-      "created_at": 1670298551.5341718,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": []
       },
@@ -496,7 +517,7 @@
     },
     "macro.dbt.build_source_function": {
       "arguments": [],
-      "created_at": 1670298551.5351338,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": []
       },
@@ -941,7 +962,7 @@
     },
     "macro.dbt.current_timestamp_backcompat": {
       "arguments": [],
-      "created_at": 1670298551.47562,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt_postgres.postgres__current_timestamp_backcompat"
@@ -967,7 +988,7 @@
     },
     "macro.dbt.current_timestamp_in_utc_backcompat": {
       "arguments": [],
-      "created_at": 1670298551.4763389,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt_postgres.postgres__current_timestamp_in_utc_backcompat"
@@ -1250,7 +1271,7 @@
     },
     "macro.dbt.default__array_append": {
       "arguments": [],
-      "created_at": 1670298551.470784,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": []
       },
@@ -1274,7 +1295,7 @@
     },
     "macro.dbt.default__array_concat": {
       "arguments": [],
-      "created_at": 1670298551.460879,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": []
       },
@@ -1298,7 +1319,7 @@
     },
     "macro.dbt.default__array_construct": {
       "arguments": [],
-      "created_at": 1670298551.469611,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": []
       },
@@ -1699,7 +1720,7 @@
     },
     "macro.dbt.default__current_timestamp_backcompat": {
       "arguments": [],
-      "created_at": 1670298551.4758148,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": []
       },
@@ -1723,7 +1744,7 @@
     },
     "macro.dbt.default__current_timestamp_in_utc_backcompat": {
       "arguments": [],
-      "created_at": 1670298551.4767418,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.current_timestamp_backcompat",
@@ -2292,7 +2313,7 @@
     },
     "macro.dbt.default__get_incremental_append_sql": {
       "arguments": [],
-      "created_at": 1670298551.315692,
+      "created_at": 1670298551.312233,
       "depends_on": {
         "macros": [
           "macro.dbt.get_insert_into_sql"
@@ -2318,7 +2339,7 @@
     },
     "macro.dbt.default__get_incremental_default_sql": {
       "arguments": [],
-      "created_at": 1670298551.319065,
+      "created_at": 1670298551.308408,
       "depends_on": {
         "macros": [
           "macro.dbt.get_incremental_append_sql"
@@ -2344,7 +2365,7 @@
     },
     "macro.dbt.default__get_incremental_delete_insert_sql": {
       "arguments": [],
-      "created_at": 1670298551.316586,
+      "created_at": 1670298551.49324,
       "depends_on": {
         "macros": [
           "macro.dbt.get_delete_insert_merge_sql"
@@ -2370,7 +2391,7 @@
     },
     "macro.dbt.default__get_incremental_insert_overwrite_sql": {
       "arguments": [],
-      "created_at": 1670298551.3183832,
+      "created_at": 1670298551.5039842,
       "depends_on": {
         "macros": [
           "macro.dbt.get_insert_overwrite_merge_sql"
@@ -2396,7 +2417,7 @@
     },
     "macro.dbt.default__get_incremental_merge_sql": {
       "arguments": [],
-      "created_at": 1670298551.317482,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.get_merge_sql"
@@ -2422,7 +2443,7 @@
     },
     "macro.dbt.default__get_insert_overwrite_merge_sql": {
       "arguments": [],
-      "created_at": 1670298551.312233,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.get_quoted_csv"
@@ -2448,7 +2469,7 @@
     },
     "macro.dbt.default__get_merge_sql": {
       "arguments": [],
-      "created_at": 1670298551.308408,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.get_quoted_csv",
@@ -2475,7 +2496,7 @@
     },
     "macro.dbt.default__get_merge_update_columns": {
       "arguments": [],
-      "created_at": 1670298551.298201,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": []
       },
@@ -2499,7 +2520,7 @@
     },
     "macro.dbt.default__get_or_create_relation": {
       "arguments": [],
-      "created_at": 1670298551.49324,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": []
       },
@@ -2523,7 +2544,7 @@
     },
     "macro.dbt.default__get_revoke_sql": {
       "arguments": [],
-      "created_at": 1670298551.5039842,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": []
       },
@@ -3532,6 +3553,30 @@
       "tags": [],
       "unique_id": "macro.dbt.default__type_boolean"
     },
+    "macro.dbt.default__type_boolean": {
+      "arguments": [],
+      "created_at": 1663278957.5715818,
+      "depends_on": {
+        "macros": []
+      },
+      "description": "",
+      "docs": {
+        "node_color": null,
+        "show": true
+      },
+      "macro_sql": "{%- macro default__type_boolean() -%}\n  {{ return(api.Column.translate_type(\"boolean\")) }}\n{%- endmacro -%}\n\n",
+      "meta": {},
+      "name": "default__type_boolean",
+      "original_file_path": "macros/utils/data_types.sql",
+      "package_name": "dbt",
+      "patch_path": null,
+      "path": "macros/utils/data_types.sql",
+      "resource_type": "macro",
+      "root_path": "/some-path/sample-dbt",
+      "supported_languages": null,
+      "tags": [],
+      "unique_id": "macro.dbt.default__type_boolean"
+    },
     "macro.dbt.default__type_float": {
       "arguments": [],
       "created_at": 1670298551.455922,
@@ -4271,7 +4316,7 @@
     },
     "macro.dbt.get_incremental_append_sql": {
       "arguments": [],
-      "created_at": 1670298551.3152268,
+      "created_at": 1670298551.3109581,
       "depends_on": {
         "macros": [
           "macro.dbt.default__get_incremental_append_sql"
@@ -4297,7 +4342,7 @@
     },
     "macro.dbt.get_incremental_default_sql": {
       "arguments": [],
-      "created_at": 1670298551.318759,
+      "created_at": 1670298551.3051069,
       "depends_on": {
         "macros": [
           "macro.dbt_postgres.postgres__get_incremental_default_sql"
@@ -4323,7 +4368,7 @@
     },
     "macro.dbt.get_incremental_delete_insert_sql": {
       "arguments": [],
-      "created_at": 1670298551.3160691,
+      "created_at": 1670298551.491816,
       "depends_on": {
         "macros": [
           "macro.dbt.default__get_incremental_delete_insert_sql"
@@ -4349,7 +4394,7 @@
     },
     "macro.dbt.get_incremental_insert_overwrite_sql": {
       "arguments": [],
-      "created_at": 1670298551.317858,
+      "created_at": 1670298551.293896,
       "depends_on": {
         "macros": [
           "macro.dbt.default__get_incremental_insert_overwrite_sql"
@@ -4375,7 +4420,7 @@
     },
     "macro.dbt.get_incremental_merge_sql": {
       "arguments": [],
-      "created_at": 1670298551.31696,
+      "created_at": 1670298551.5035589,
       "depends_on": {
         "macros": [
           "macro.dbt.default__get_incremental_merge_sql"
@@ -4401,7 +4446,7 @@
     },
     "macro.dbt.get_insert_into_sql": {
       "arguments": [],
-      "created_at": 1670298551.319639,
+      "created_at": 1670298551.381716,
       "depends_on": {
         "macros": [
           "macro.dbt.get_quoted_csv"
@@ -4427,7 +4472,7 @@
     },
     "macro.dbt.get_insert_overwrite_merge_sql": {
       "arguments": [],
-      "created_at": 1670298551.3109581,
+      "created_at": 1670298551.501869,
       "depends_on": {
         "macros": [
           "macro.dbt.default__get_insert_overwrite_merge_sql"
@@ -4453,7 +4498,7 @@
     },
     "macro.dbt.get_merge_sql": {
       "arguments": [],
-      "created_at": 1670298551.3051069,
+      "created_at": 1670298551.289005,
       "depends_on": {
         "macros": [
           "macro.dbt.default__get_merge_sql"
@@ -4479,7 +4524,7 @@
     },
     "macro.dbt.get_merge_update_columns": {
       "arguments": [],
-      "created_at": 1670298551.296777,
+      "created_at": 1670298551.269536,
       "depends_on": {
         "macros": [
           "macro.dbt.default__get_merge_update_columns"
@@ -4505,7 +4550,7 @@
     },
     "macro.dbt.get_or_create_relation": {
       "arguments": [],
-      "created_at": 1670298551.491816,
+      "created_at": 1670298551.29043,
       "depends_on": {
         "macros": [
           "macro.dbt.default__get_or_create_relation"
@@ -4531,7 +4576,7 @@
     },
     "macro.dbt.get_quoted_csv": {
       "arguments": [],
-      "created_at": 1670298551.293896,
+      "created_at": 1670298551.356553,
       "depends_on": {
         "macros": []
       },
@@ -4555,7 +4600,7 @@
     },
     "macro.dbt.get_revoke_sql": {
       "arguments": [],
-      "created_at": 1670298551.5035589,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.default__get_revoke_sql"
@@ -4581,7 +4626,7 @@
     },
     "macro.dbt.get_seed_column_quoted_csv": {
       "arguments": [],
-      "created_at": 1670298551.381716,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": []
       },
@@ -4605,7 +4650,7 @@
     },
     "macro.dbt.get_show_grant_sql": {
       "arguments": [],
-      "created_at": 1670298551.501869,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt_postgres.postgres__get_show_grant_sql"
@@ -4631,7 +4676,7 @@
     },
     "macro.dbt.get_test_sql": {
       "arguments": [],
-      "created_at": 1670298551.289005,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.default__get_test_sql"
@@ -4657,7 +4702,7 @@
     },
     "macro.dbt.get_true_sql": {
       "arguments": [],
-      "created_at": 1670298551.269536,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.default__get_true_sql"
@@ -4683,7 +4728,7 @@
     },
     "macro.dbt.get_where_subquery": {
       "arguments": [],
-      "created_at": 1670298551.29043,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.default__get_where_subquery"
@@ -4709,7 +4754,7 @@
     },
     "macro.dbt.handle_existing_table": {
       "arguments": [],
-      "created_at": 1670298551.356553,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.default__handle_existing_table"
@@ -5604,7 +5649,7 @@
     },
     "macro.dbt.py_script_comment": {
       "arguments": [],
-      "created_at": 1670298551.53705,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": []
       },
@@ -5628,7 +5673,7 @@
     },
     "macro.dbt.py_script_postfix": {
       "arguments": [],
-      "created_at": 1670298551.536886,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.build_ref_function",
@@ -6482,7 +6527,7 @@
     },
     "macro.dbt.type_boolean": {
       "arguments": [],
-      "created_at": 1670298551.459148,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.default__type_boolean"
@@ -6838,7 +6883,7 @@
     },
     "macro.dbt_postgres.postgres__current_timestamp_backcompat": {
       "arguments": [],
-      "created_at": 1670298551.200057,
+      "created_at": 1670298551.229297,
       "depends_on": {
         "macros": [
           "macro.dbt.type_timestamp"
@@ -6864,7 +6909,7 @@
     },
     "macro.dbt_postgres.postgres__current_timestamp_in_utc_backcompat": {
       "arguments": [],
-      "created_at": 1670298551.2002811,
+      "created_at": 1670298551.236534,
       "depends_on": {
         "macros": [
           "macro.dbt.type_timestamp"
@@ -6890,7 +6935,7 @@
     },
     "macro.dbt_postgres.postgres__dateadd": {
       "arguments": [],
-      "created_at": 1670298551.229297,
+      "created_at": 1670298551.2158039,
       "depends_on": {
         "macros": []
       },
@@ -6914,7 +6959,7 @@
     },
     "macro.dbt_postgres.postgres__datediff": {
       "arguments": [],
-      "created_at": 1670298551.236534,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.datediff"
@@ -6940,7 +6985,7 @@
     },
     "macro.dbt_postgres.postgres__drop_schema": {
       "arguments": [],
-      "created_at": 1670298551.2158039,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.statement"
@@ -7043,7 +7088,7 @@
     },
     "macro.dbt_postgres.postgres__get_incremental_default_sql": {
       "arguments": [],
-      "created_at": 1670298551.2271192,
+      "created_at": 1663278957.5715818,
       "depends_on": {
         "macros": [
           "macro.dbt.get_incremental_delete_insert_sql",
@@ -7472,6 +7517,30 @@
       "supported_languages": null,
       "tags": [],
       "unique_id": "macro.dbt_postgres.postgres_get_relations"
+    },
+    "macro.sample_dbt.test_is_email": {
+      "arguments": [],
+      "created_at": 1663278957.5715818,
+      "depends_on": {
+        "macros": []
+      },
+      "description": "",
+      "docs": {
+        "node_color": null,
+        "show": true
+      },
+      "macro_sql": "{% test is_email(model, column_name) %}\n\n    select *\n    from {{ model }}\n    where {{ column_name }} not like '%@%'\n\n{% endtest %}",
+      "meta": {},
+      "name": "test_is_email",
+      "original_file_path": "tests/generic/assert_is_email.sql",
+      "package_name": "sample_dbt",
+      "patch_path": null,
+      "path": "tests/generic/assert_is_email.sql",
+      "resource_type": "macro",
+      "root_path": "/some-path/sample-dbt",
+      "supported_languages": null,
+      "tags": [],
+      "unique_id": "macro.sample_dbt.test_is_email"
     }
   },
   "metadata": {
@@ -7483,7 +7552,7 @@
     "invocation_id": "just-some-random-id",
     "project_id": "d7ed27e3f02ff95ca753dd76aed208ee",
     "send_anonymous_usage_stats": true,
-    "user_id": "0291cdf8-5dae-42a8-be0a-23dc3ecca550"
+    "user_id": "e2ada6ad-3b40-4a61-8f16-dc722bad324d"
   },
   "metrics": {},
   "nodes": {
@@ -7491,12 +7560,12 @@
       "alias": "customer_details",
       "build_path": null,
       "checksum": {
-        "checksum": "038ac5af10d168699b8e5dcef54752c22a31a705eed010cacbf180e9ca214ceb",
+        "checksum": "84914e889940a80b3a628e160ff92910bfd2749fc253520a602aa885f878f28b",
         "name": "sha256"
       },
       "columns": {},
       "compiled": true,
-      "compiled_code": "\n\nSELECT\n    c.customer_id,\n    c.first_name || ' ' || c.last_name as \"full_name\",\n    c.email,\n    a.address,\n    m.city,\n    a.postal_code,\n    a.phone\nFROM\n    \"pagila\".\"public\".\"customer\" c\n    left outer join \"pagila\".\"public\".\"address\" a on c.address_id = a.address_id\n    left outer join \"pagila\".\"public\".\"city\" m on a.city_id = m.city_id",
+      "compiled_code": "\n\nSELECT\n    c.customer_id,\n    c.first_name || ' ' || c.last_name as \"full_name\",\n    (\n        select cs.first_name || ' ' || cs.last_name\n        from \"pagila\".\"public\".\"customer_snapshot\" cs where cs.customer_id = c.customer_id\n        order by dbt_valid_from desc\n        limit 1\n    ) as \"initial_full_name\",\n    c.email,\n    a.address,\n    m.city,\n    a.postal_code,\n    a.phone\nFROM\n    \"pagila\".\"public\".\"customer\" c\n    left outer join \"pagila\".\"public\".\"address\" a on c.address_id = a.address_id\n    left outer join \"pagila\".\"public\".\"city\" m on a.city_id = m.city_id",
       "compiled_path": "target/compiled/sample_dbt/models/transform/customer_details.sql",
       "config": {
         "alias": null,
@@ -7529,8 +7598,9 @@
         "macros": [],
         "nodes": [
           "source.sample_dbt.pagila.customer",
+          "source.sample_dbt.pagila.city",
           "source.sample_dbt.pagila.address",
-          "source.sample_dbt.pagila.city"
+          "snapshot.sample_dbt.customer_snapshot"
         ]
       },
       "description": "",
@@ -7553,12 +7623,16 @@
       "package_name": "sample_dbt",
       "patch_path": null,
       "path": "transform/customer_details.sql",
-      "raw_code": "{{ config(\n    materialized = \"ephemeral\",\n) }}\n\nSELECT\n    c.customer_id,\n    c.first_name || ' ' || c.last_name as \"full_name\",\n    c.email,\n    a.address,\n    m.city,\n    a.postal_code,\n    a.phone\nFROM\n    {{ source('pagila', 'customer')}} c\n    left outer join {{ source('pagila', 'address')}} a on c.address_id = a.address_id\n    left outer join {{ source('pagila', 'city') }} m on a.city_id = m.city_id",
-      "refs": [],
+      "raw_code": "{{ config(\n    materialized = \"ephemeral\",\n) }}\n\nSELECT\n    c.customer_id,\n    c.first_name || ' ' || c.last_name as \"full_name\",\n    (\n        select cs.first_name || ' ' || cs.last_name\n        from {{ ref('customer_snapshot') }} cs where cs.customer_id = c.customer_id\n        order by dbt_valid_from desc\n        limit 1\n    ) as \"initial_full_name\",\n    c.email,\n    a.address,\n    m.city,\n    a.postal_code,\n    a.phone\nFROM\n    {{ source('pagila', 'customer')}} c\n    left outer join {{ source('pagila', 'address')}} a on c.address_id = a.address_id\n    left outer join {{ source('pagila', 'city') }} m on a.city_id = m.city_id",
+      "refs": [
+        [
+          "customer_snapshot"
+        ]
+      ],
       "relation_name": null,
       "resource_type": "model",
       "root_path": "/some-path/sample-dbt",
-      "schema": "dbt_postgres",
+      "schema": "public",
       "sources": [
         [
           "pagila",
@@ -7566,7 +7640,7 @@
         ],
         [
           "pagila",
-          "address"
+          "city"
         ],
         [
           "pagila",
@@ -7581,14 +7655,39 @@
     },
     "model.sample_dbt.monthly_billing_with_cust": {
       "alias": "an-aliased-view-for-monthly-billing",
-      "build_path": null,
+      "build_path": "target/run/sample_dbt/models/billing/monthly_billing_with_cust.sql",
       "checksum": {
         "checksum": "3f13dfa22648e3bb3e52082de053591b33b07ca028216db3b12a1a09d6bf747a",
         "name": "sha256"
       },
-      "columns": {},
+      "columns": {
+        "billing_month": {
+          "data_type": null,
+          "description": "",
+          "meta": {},
+          "name": "billing_month",
+          "quote": null,
+          "tags": []
+        },
+        "customer_id": {
+          "data_type": null,
+          "description": "",
+          "meta": {},
+          "name": "customer_id",
+          "quote": null,
+          "tags": []
+        },
+        "email": {
+          "data_type": null,
+          "description": "",
+          "meta": {},
+          "name": "email",
+          "quote": null,
+          "tags": []
+        }
+      },
       "compiled": true,
-      "compiled_code": "\n\nwith __dbt__cte__customer_details as (\n\n\nSELECT\n    c.customer_id,\n    c.first_name || ' ' || c.last_name as \"full_name\",\n    c.email,\n    a.address,\n    m.city,\n    a.postal_code,\n    a.phone\nFROM\n    \"pagila\".\"public\".\"customer\" c\n    left outer join \"pagila\".\"public\".\"address\" a on c.address_id = a.address_id\n    left outer join \"pagila\".\"public\".\"city\" m on a.city_id = m.city_id\n)SELECT \n    pbc.billing_month,\n    pbc.customer_id,\n    pbc.amount,\n    cust.email\nFROM\n    \"pagila\".\"dbt_postgres\".\"payments_by_customer_by_month\" pbc\n    left outer join __dbt__cte__customer_details cust on pbc.customer_id = cust.customer_id\nORDER BY\n    pbc.billing_month",
+      "compiled_code": "\n\nwith __dbt__cte__customer_details as (\n\n\nSELECT\n    c.customer_id,\n    c.first_name || ' ' || c.last_name as \"full_name\",\n    (\n        select cs.first_name || ' ' || cs.last_name\n        from \"pagila\".\"public\".\"customer_snapshot\" cs where cs.customer_id = c.customer_id\n        order by dbt_valid_from desc\n        limit 1\n    ) as \"initial_full_name\",\n    c.email,\n    a.address,\n    m.city,\n    a.postal_code,\n    a.phone\nFROM\n    \"pagila\".\"public\".\"customer\" c\n    left outer join \"pagila\".\"public\".\"address\" a on c.address_id = a.address_id\n    left outer join \"pagila\".\"public\".\"city\" m on a.city_id = m.city_id\n)SELECT \n    pbc.billing_month,\n    pbc.customer_id,\n    pbc.amount,\n    cust.email\nFROM\n    \"pagila\".\"public\".\"payments_by_customer_by_month\" pbc\n    left outer join __dbt__cte__customer_details cust on pbc.customer_id = cust.customer_id\nORDER BY\n    pbc.billing_month",
       "compiled_path": "target/compiled/sample_dbt/models/billing/monthly_billing_with_cust.sql",
       "config": {
         "alias": "an-aliased-view-for-monthly-billing",
@@ -7632,7 +7731,7 @@
       "extra_ctes": [
         {
           "id": "model.sample_dbt.customer_details",
-          "sql": " __dbt__cte__customer_details as (\n\n\nSELECT\n    c.customer_id,\n    c.first_name || ' ' || c.last_name as \"full_name\",\n    c.email,\n    a.address,\n    m.city,\n    a.postal_code,\n    a.phone\nFROM\n    \"pagila\".\"public\".\"customer\" c\n    left outer join \"pagila\".\"public\".\"address\" a on c.address_id = a.address_id\n    left outer join \"pagila\".\"public\".\"city\" m on a.city_id = m.city_id\n)"
+          "sql": " __dbt__cte__customer_details as (\n\n\nSELECT\n    c.customer_id,\n    c.first_name || ' ' || c.last_name as \"full_name\",\n    (\n        select cs.first_name || ' ' || cs.last_name\n        from \"pagila\".\"public\".\"customer_snapshot\" cs where cs.customer_id = c.customer_id\n        order by dbt_valid_from desc\n        limit 1\n    ) as \"initial_full_name\",\n    c.email,\n    a.address,\n    m.city,\n    a.postal_code,\n    a.phone\nFROM\n    \"pagila\".\"public\".\"customer\" c\n    left outer join \"pagila\".\"public\".\"address\" a on c.address_id = a.address_id\n    left outer join \"pagila\".\"public\".\"city\" m on a.city_id = m.city_id\n)"
         }
       ],
       "extra_ctes_injected": true,
@@ -7647,7 +7746,7 @@
       "name": "monthly_billing_with_cust",
       "original_file_path": "models/billing/monthly_billing_with_cust.sql",
       "package_name": "sample_dbt",
-      "patch_path": null,
+      "patch_path": "sample_dbt://models/base.yml",
       "path": "billing/monthly_billing_with_cust.sql",
       "raw_code": "{{ config(\n    materialized = \"table\",\n    alias='an-aliased-view-for-monthly-billing'\n) }}\n\nSELECT \n    pbc.billing_month,\n    pbc.customer_id,\n    pbc.amount,\n    cust.email\nFROM\n    {{ ref('payments_by_customer_by_month')}} pbc\n    left outer join {{ ref('customer_details')}} cust on pbc.customer_id = cust.customer_id\nORDER BY\n    pbc.billing_month",
       "refs": [
@@ -7658,10 +7757,10 @@
           "customer_details"
         ]
       ],
-      "relation_name": "\"pagila\".\"dbt_postgres\".\"an-aliased-view-for-monthly-billing\"",
+      "relation_name": "\"pagila\".\"public\".\"an-aliased-view-for-monthly-billing\"",
       "resource_type": "model",
       "root_path": "/some-path/sample-dbt",
-      "schema": "dbt_postgres",
+      "schema": "public",
       "sources": [],
       "tags": [],
       "unique_id": "model.sample_dbt.monthly_billing_with_cust",
@@ -7671,10 +7770,10 @@
       }
     },
     "model.sample_dbt.payments_base": {
-      "alias": "an-aliased-view-for-payments",
-      "build_path": null,
+      "alias": "an_aliased_view_for_payments",
+      "build_path": "target/run/sample_dbt/models/base/payments_base.sql",
       "checksum": {
-        "checksum": "11032ac45a744ecfe350f4ba5d7cbdd8b47bc83f0b39474dd0e7839888768dd3",
+        "checksum": "33a656d04defa3ea5153708e66658621465f444b388b775cfa7c3bbdc8cf7898",
         "name": "sha256"
       },
       "columns": {},
@@ -7682,7 +7781,7 @@
       "compiled_code": "\n\nwith payments as (\n\n    select \n        *\n    from \n        \"pagila\".\"public\".\"payment_p2020_01\"\n    UNION ALL\n    select \n        *\n    from \n        \"pagila\".\"public\".\"payment_p2020_02\"\n    UNION ALL\n    select \n        *\n    from \n        \"pagila\".\"public\".\"payment_p2020_02\"\n    UNION ALL\n    select \n        *\n    from \n        \"pagila\".\"public\".\"payment_p2020_03\"\n    UNION ALL\n    select \n        *\n    from \n        \"pagila\".\"public\".\"payment_p2020_04\"\n    UNION ALL\n    select \n        *\n    from \n        \"pagila\".\"public\".\"payment_p2020_05\"\n    UNION ALL\n    select \n        *\n    from \n        \"pagila\".\"public\".\"payment_p2020_06\"\n)\n\nselect *\nfrom payments",
       "compiled_path": "target/compiled/sample_dbt/models/base/payments_base.sql",
       "config": {
-        "alias": "an-aliased-view-for-payments",
+        "alias": "an_aliased_view_for_payments",
         "column_types": {},
         "database": null,
         "docs": {
@@ -7711,12 +7810,12 @@
       "depends_on": {
         "macros": [],
         "nodes": [
-          "source.sample_dbt.pagila.payment_p2020_05",
-          "source.sample_dbt.pagila.payment_p2020_04",
-          "source.sample_dbt.pagila.payment_p2020_01",
+          "source.sample_dbt.pagila.payment_p2020_03",
           "source.sample_dbt.pagila.payment_p2020_06",
+          "source.sample_dbt.pagila.payment_p2020_01",
+          "source.sample_dbt.pagila.payment_p2020_04",
           "source.sample_dbt.pagila.payment_p2020_02",
-          "source.sample_dbt.pagila.payment_p2020_03"
+          "source.sample_dbt.pagila.payment_p2020_05"
         ]
       },
       "description": "",
@@ -7739,20 +7838,20 @@
       "package_name": "sample_dbt",
       "patch_path": null,
       "path": "base/payments_base.sql",
-      "raw_code": "{{ config(\n    materialized=\"view\",\n    alias='an-aliased-view-for-payments'\n) }}\n\nwith payments as (\n\n    select \n        *\n    from \n        {{ source('pagila', 'payment_p2020_01')}}\n    UNION ALL\n    select \n        *\n    from \n        {{ source('pagila', 'payment_p2020_02')}}\n    UNION ALL\n    select \n        *\n    from \n        {{ source('pagila', 'payment_p2020_02')}}\n    UNION ALL\n    select \n        *\n    from \n        {{ source('pagila', 'payment_p2020_03')}}\n    UNION ALL\n    select \n        *\n    from \n        {{ source('pagila', 'payment_p2020_04')}}\n    UNION ALL\n    select \n        *\n    from \n        {{ source('pagila', 'payment_p2020_05')}}\n    UNION ALL\n    select \n        *\n    from \n        {{ source('pagila', 'payment_p2020_06')}}\n)\n\nselect *\nfrom payments",
+      "raw_code": "{{ config(\n    materialized=\"view\",\n    alias='an_aliased_view_for_payments'\n) }}\n\nwith payments as (\n\n    select \n        *\n    from \n        {{ source('pagila', 'payment_p2020_01')}}\n    UNION ALL\n    select \n        *\n    from \n        {{ source('pagila', 'payment_p2020_02')}}\n    UNION ALL\n    select \n        *\n    from \n        {{ source('pagila', 'payment_p2020_02')}}\n    UNION ALL\n    select \n        *\n    from \n        {{ source('pagila', 'payment_p2020_03')}}\n    UNION ALL\n    select \n        *\n    from \n        {{ source('pagila', 'payment_p2020_04')}}\n    UNION ALL\n    select \n        *\n    from \n        {{ source('pagila', 'payment_p2020_05')}}\n    UNION ALL\n    select \n        *\n    from \n        {{ source('pagila', 'payment_p2020_06')}}\n)\n\nselect *\nfrom payments",
       "refs": [],
-      "relation_name": "\"pagila\".\"dbt_postgres\".\"an-aliased-view-for-payments\"",
+      "relation_name": "\"pagila\".\"public\".\"an_aliased_view_for_payments\"",
       "resource_type": "model",
       "root_path": "/some-path/sample-dbt",
-      "schema": "dbt_postgres",
+      "schema": "public",
       "sources": [
         [
           "pagila",
-          "payment_p2020_05"
+          "payment_p2020_03"
         ],
         [
           "pagila",
-          "payment_p2020_04"
+          "payment_p2020_06"
         ],
         [
           "pagila",
@@ -7760,7 +7859,7 @@
         ],
         [
           "pagila",
-          "payment_p2020_06"
+          "payment_p2020_04"
         ],
         [
           "pagila",
@@ -7774,13 +7873,13 @@
       "tags": [],
       "unique_id": "model.sample_dbt.payments_base",
       "unrendered_config": {
-        "alias": "an-aliased-view-for-payments",
+        "alias": "an_aliased_view_for_payments",
         "materialized": "view"
       }
     },
     "model.sample_dbt.payments_by_customer_by_month": {
       "alias": "payments_by_customer_by_month",
-      "build_path": null,
+      "build_path": "target/run/sample_dbt/models/transform/payments_by_customer_by_month.sql",
       "checksum": {
         "checksum": "691757217fdc0ad849160f0b24bff8fa09385b51f9f5605dda388a6d47d1ab28",
         "name": "sha256"
@@ -7807,6 +7906,7 @@
           "description": "description for customer_id from dbt",
           "meta": {
             "is_sensitive": true,
+            "maturity": "beta",
             "terms": "pii, customer_id"
           },
           "name": "customer_id",
@@ -7817,7 +7917,7 @@
         }
       },
       "compiled": true,
-      "compiled_code": "\n\nSELECT\n    date_trunc('month', payment_date) as \"billing_month\",\n    customer_id,\n    sum(amount) as \"amount\"\nFROM\n    \"pagila\".\"dbt_postgres\".\"an-aliased-view-for-payments\"\nGROUP BY\n    billing_month,\n    customer_id",
+      "compiled_code": "\n\nSELECT\n    date_trunc('month', payment_date) as \"billing_month\",\n    customer_id,\n    sum(amount) as \"amount\"\nFROM\n    \"pagila\".\"public\".\"an_aliased_view_for_payments\"\nGROUP BY\n    billing_month,\n    customer_id",
       "compiled_path": "target/compiled/sample_dbt/models/transform/payments_by_customer_by_month.sql",
       "config": {
         "alias": null,
@@ -7878,20 +7978,710 @@
           "payments_base"
         ]
       ],
-      "relation_name": "\"pagila\".\"dbt_postgres\".\"payments_by_customer_by_month\"",
+      "relation_name": "\"pagila\".\"public\".\"payments_by_customer_by_month\"",
       "resource_type": "model",
       "root_path": "/some-path/sample-dbt",
-      "schema": "dbt_postgres",
+      "schema": "public",
       "sources": [],
       "tags": [],
       "unique_id": "model.sample_dbt.payments_by_customer_by_month",
       "unrendered_config": {
         "materialized": "table"
       }
+    },
+    "snapshot.sample_dbt.customer_snapshot": {
+      "alias": "customer_snapshot",
+      "build_path": "target/run/sample_dbt/snapshots/customer_snapshot.sql",
+      "checksum": {
+        "checksum": "a410c31c45fe4eb67521dd1801e84eea6ad896950e43adc9d794fbc2499d2784",
+        "name": "sha256"
+      },
+      "columns": {},
+      "compiled": true,
+      "compiled_code": "\n\n\n\nselect * from \"pagila\".\"public\".\"customer\"\n",
+      "compiled_path": null,
+      "config": {
+        "alias": null,
+        "column_types": {},
+        "database": null,
+        "docs": {
+          "node_color": null,
+          "show": true
+        },
+        "enabled": true,
+        "full_refresh": null,
+        "grants": {},
+        "incremental_strategy": null,
+        "materialized": "snapshot",
+        "meta": {},
+        "on_schema_change": "ignore",
+        "packages": [],
+        "persist_docs": {},
+        "post-hook": [],
+        "pre-hook": [],
+        "quoting": {},
+        "schema": null,
+        "strategy": "timestamp",
+        "tags": [],
+        "target_database": "pagila",
+        "target_schema": "public",
+        "unique_key": "customer_id",
+        "updated_at": "last_update"
+      },
+      "created_at": 1663278957.5715818,
+      "database": "pagila",
+      "deferred": false,
+      "depends_on": {
+        "macros": [],
+        "nodes": [
+          "source.sample_dbt.pagila.customer"
+        ]
+      },
+      "description": "",
+      "docs": {
+        "node_color": null,
+        "show": true
+      },
+      "extra_ctes": [],
+      "extra_ctes_injected": true,
+      "fqn": [
+        "sample_dbt",
+        "customer_snapshot",
+        "customer_snapshot"
+      ],
+      "language": "sql",
+      "meta": {},
+      "metrics": [],
+      "name": "customer_snapshot",
+      "original_file_path": "snapshots/customer_snapshot.sql",
+      "package_name": "sample_dbt",
+      "patch_path": null,
+      "path": "customer_snapshot.sql",
+      "raw_code": "\n\n{{\n    config(\n      target_database='pagila',\n      target_schema='public',\n      unique_key='customer_id',\n\n      strategy='timestamp',\n      updated_at='last_update',\n    )\n}}\n\nselect * from {{ source('pagila', 'customer') }}\n\n",
+      "refs": [],
+      "relation_name": "\"pagila\".\"public\".\"customer_snapshot\"",
+      "resource_type": "snapshot",
+      "root_path": "/some-path/sample-dbt",
+      "schema": "public",
+      "sources": [
+        [
+          "pagila",
+          "customer"
+        ]
+      ],
+      "tags": [],
+      "unique_id": "snapshot.sample_dbt.customer_snapshot",
+      "unrendered_config": {
+        "strategy": "timestamp",
+        "target_database": "pagila",
+        "target_schema": "public",
+        "unique_key": "customer_id",
+        "updated_at": "last_update"
+      }
+    },
+    "test.sample_dbt.assert_source_actor_last_update_is_recent": {
+      "alias": "assert_source_actor_last_update_is_recent",
+      "build_path": "target/run/sample_dbt/tests/assert_source_actor_last_update_is_recent.sql",
+      "checksum": {
+        "checksum": "2e93cd1a76b699545141d26bc80ae46d05b577ca86ad615cd8e27428b950d1d9",
+        "name": "sha256"
+      },
+      "columns": {},
+      "compiled": true,
+      "compiled_code": "select\n    *\nfrom \"pagila\".\"public\".\"actor\"\nwhere last_update < (now() - interval '100 years')",
+      "compiled_path": "target/compiled/sample_dbt/tests/assert_source_actor_last_update_is_recent.sql",
+      "config": {
+        "alias": null,
+        "database": null,
+        "enabled": true,
+        "error_if": "!= 0",
+        "fail_calc": "count(*)",
+        "limit": null,
+        "materialized": "test",
+        "meta": {},
+        "schema": "dbt_test__audit",
+        "severity": "ERROR",
+        "store_failures": null,
+        "tags": [],
+        "warn_if": "!= 0",
+        "where": null
+      },
+      "created_at": 1663278957.5715818,
+      "database": "pagila",
+      "deferred": false,
+      "depends_on": {
+        "macros": [
+          "macro.dbt.should_store_failures",
+          "macro.dbt.statement"
+        ],
+        "nodes": [
+          "source.sample_dbt.pagila.actor"
+        ]
+      },
+      "description": "",
+      "docs": {
+        "node_color": null,
+        "show": true
+      },
+      "extra_ctes": [],
+      "extra_ctes_injected": true,
+      "fqn": [
+        "sample_dbt",
+        "assert_source_actor_last_update_is_recent"
+      ],
+      "language": "sql",
+      "meta": {},
+      "metrics": [],
+      "name": "assert_source_actor_last_update_is_recent",
+      "original_file_path": "tests/assert_source_actor_last_update_is_recent.sql",
+      "package_name": "sample_dbt",
+      "patch_path": null,
+      "path": "assert_source_actor_last_update_is_recent.sql",
+      "raw_code": "select\n    *\nfrom {{ source('pagila', 'actor') }}\nwhere last_update < (now() - interval '100 years')",
+      "refs": [],
+      "relation_name": null,
+      "resource_type": "test",
+      "root_path": "/some-path/sample-dbt",
+      "schema": "public_dbt_test__audit",
+      "sources": [
+        [
+          "pagila",
+          "actor"
+        ]
+      ],
+      "tags": [],
+      "unique_id": "test.sample_dbt.assert_source_actor_last_update_is_recent",
+      "unrendered_config": {}
+    },
+    "test.sample_dbt.is_email_monthly_billing_with_cust_email.57a935ce99": {
+      "alias": "is_email_monthly_billing_with_cust_email",
+      "build_path": "target/run/sample_dbt/models/base.yml/is_email_monthly_billing_with_cust_email.sql",
+      "checksum": {
+        "checksum": "",
+        "name": "none"
+      },
+      "column_name": "email",
+      "columns": {},
+      "compiled": true,
+      "compiled_code": "\n\n    select *\n    from \"pagila\".\"public\".\"an-aliased-view-for-monthly-billing\"\n    where email not like '%@%'\n\n",
+      "compiled_path": "target/compiled/sample_dbt/models/base.yml/is_email_monthly_billing_with_cust_email.sql",
+      "config": {
+        "alias": null,
+        "database": null,
+        "enabled": true,
+        "error_if": "!= 0",
+        "fail_calc": "count(*)",
+        "limit": null,
+        "materialized": "test",
+        "meta": {},
+        "schema": "dbt_test__audit",
+        "severity": "ERROR",
+        "store_failures": null,
+        "tags": [],
+        "warn_if": "!= 0",
+        "where": null
+      },
+      "created_at": 1663278957.5715818,
+      "database": "pagila",
+      "deferred": false,
+      "depends_on": {
+        "macros": [
+          "macro.sample_dbt.test_is_email",
+          "macro.dbt.get_where_subquery",
+          "macro.dbt.should_store_failures",
+          "macro.dbt.statement"
+        ],
+        "nodes": [
+          "model.sample_dbt.monthly_billing_with_cust"
+        ]
+      },
+      "description": "",
+      "docs": {
+        "node_color": null,
+        "show": true
+      },
+      "extra_ctes": [],
+      "extra_ctes_injected": true,
+      "file_key_name": "models.monthly_billing_with_cust",
+      "fqn": [
+        "sample_dbt",
+        "is_email_monthly_billing_with_cust_email"
+      ],
+      "language": "sql",
+      "meta": {},
+      "metrics": [],
+      "name": "is_email_monthly_billing_with_cust_email",
+      "original_file_path": "models/base.yml",
+      "package_name": "sample_dbt",
+      "patch_path": null,
+      "path": "is_email_monthly_billing_with_cust_email.sql",
+      "raw_code": "{{ test_is_email(**_dbt_generic_test_kwargs) }}",
+      "refs": [
+        [
+          "monthly_billing_with_cust"
+        ]
+      ],
+      "relation_name": null,
+      "resource_type": "test",
+      "root_path": "/some-path/sample-dbt",
+      "schema": "public_dbt_test__audit",
+      "sources": [],
+      "tags": [],
+      "test_metadata": {
+        "kwargs": {
+          "column_name": "email",
+          "model": "{{ get_where_subquery(ref('monthly_billing_with_cust')) }}"
+        },
+        "name": "is_email",
+        "namespace": null
+      },
+      "unique_id": "test.sample_dbt.is_email_monthly_billing_with_cust_email.57a935ce99",
+      "unrendered_config": {}
+    },
+    "test.sample_dbt.not_null_monthly_billing_with_cust_billing_month.19ce54289b": {
+      "alias": "not_null_monthly_billing_with_cust_billing_month",
+      "build_path": "target/run/sample_dbt/models/base.yml/not_null_monthly_billing_with_cust_billing_month.sql",
+      "checksum": {
+        "checksum": "",
+        "name": "none"
+      },
+      "column_name": "billing_month",
+      "columns": {},
+      "compiled": true,
+      "compiled_code": "\n    \n    \n\n\n\nselect billing_month\nfrom \"pagila\".\"public\".\"an-aliased-view-for-monthly-billing\"\nwhere billing_month is null\n\n\n",
+      "compiled_path": "target/compiled/sample_dbt/models/base.yml/not_null_monthly_billing_with_cust_billing_month.sql",
+      "config": {
+        "alias": null,
+        "database": null,
+        "enabled": true,
+        "error_if": "!= 0",
+        "fail_calc": "count(*)",
+        "limit": null,
+        "materialized": "test",
+        "meta": {},
+        "schema": "dbt_test__audit",
+        "severity": "ERROR",
+        "store_failures": null,
+        "tags": [],
+        "warn_if": "!= 0",
+        "where": null
+      },
+      "created_at": 1663278957.5715818,
+      "database": "pagila",
+      "deferred": false,
+      "depends_on": {
+        "macros": [
+          "macro.dbt.test_not_null",
+          "macro.dbt.get_where_subquery",
+          "macro.dbt.should_store_failures",
+          "macro.dbt.statement"
+        ],
+        "nodes": [
+          "model.sample_dbt.monthly_billing_with_cust"
+        ]
+      },
+      "description": "",
+      "docs": {
+        "node_color": null,
+        "show": true
+      },
+      "extra_ctes": [],
+      "extra_ctes_injected": true,
+      "file_key_name": "models.monthly_billing_with_cust",
+      "fqn": [
+        "sample_dbt",
+        "not_null_monthly_billing_with_cust_billing_month"
+      ],
+      "language": "sql",
+      "meta": {},
+      "metrics": [],
+      "name": "not_null_monthly_billing_with_cust_billing_month",
+      "original_file_path": "models/base.yml",
+      "package_name": "sample_dbt",
+      "patch_path": null,
+      "path": "not_null_monthly_billing_with_cust_billing_month.sql",
+      "raw_code": "{{ test_not_null(**_dbt_generic_test_kwargs) }}",
+      "refs": [
+        [
+          "monthly_billing_with_cust"
+        ]
+      ],
+      "relation_name": null,
+      "resource_type": "test",
+      "root_path": "/some-path/sample-dbt",
+      "schema": "public_dbt_test__audit",
+      "sources": [],
+      "tags": [],
+      "test_metadata": {
+        "kwargs": {
+          "column_name": "billing_month",
+          "model": "{{ get_where_subquery(ref('monthly_billing_with_cust')) }}"
+        },
+        "name": "not_null",
+        "namespace": null
+      },
+      "unique_id": "test.sample_dbt.not_null_monthly_billing_with_cust_billing_month.19ce54289b",
+      "unrendered_config": {}
+    },
+    "test.sample_dbt.not_null_monthly_billing_with_cust_email.d405c2cc13": {
+      "alias": "not_null_monthly_billing_with_cust_email",
+      "build_path": "target/run/sample_dbt/models/base.yml/not_null_monthly_billing_with_cust_email.sql",
+      "checksum": {
+        "checksum": "",
+        "name": "none"
+      },
+      "column_name": "email",
+      "columns": {},
+      "compiled": true,
+      "compiled_code": "\n    \n    \n\n\n\nselect email\nfrom \"pagila\".\"public\".\"an-aliased-view-for-monthly-billing\"\nwhere email is null\n\n\n",
+      "compiled_path": "target/compiled/sample_dbt/models/base.yml/not_null_monthly_billing_with_cust_email.sql",
+      "config": {
+        "alias": null,
+        "database": null,
+        "enabled": true,
+        "error_if": "!= 0",
+        "fail_calc": "count(*)",
+        "limit": null,
+        "materialized": "test",
+        "meta": {},
+        "schema": "dbt_test__audit",
+        "severity": "ERROR",
+        "store_failures": null,
+        "tags": [],
+        "warn_if": "!= 0",
+        "where": null
+      },
+      "created_at": 1663278957.5715818,
+      "database": "pagila",
+      "deferred": false,
+      "depends_on": {
+        "macros": [
+          "macro.dbt.test_not_null",
+          "macro.dbt.get_where_subquery",
+          "macro.dbt.should_store_failures",
+          "macro.dbt.statement"
+        ],
+        "nodes": [
+          "model.sample_dbt.monthly_billing_with_cust"
+        ]
+      },
+      "description": "",
+      "docs": {
+        "node_color": null,
+        "show": true
+      },
+      "extra_ctes": [],
+      "extra_ctes_injected": true,
+      "file_key_name": "models.monthly_billing_with_cust",
+      "fqn": [
+        "sample_dbt",
+        "not_null_monthly_billing_with_cust_email"
+      ],
+      "language": "sql",
+      "meta": {},
+      "metrics": [],
+      "name": "not_null_monthly_billing_with_cust_email",
+      "original_file_path": "models/base.yml",
+      "package_name": "sample_dbt",
+      "patch_path": null,
+      "path": "not_null_monthly_billing_with_cust_email.sql",
+      "raw_code": "{{ test_not_null(**_dbt_generic_test_kwargs) }}",
+      "refs": [
+        [
+          "monthly_billing_with_cust"
+        ]
+      ],
+      "relation_name": null,
+      "resource_type": "test",
+      "root_path": "/some-path/sample-dbt",
+      "schema": "public_dbt_test__audit",
+      "sources": [],
+      "tags": [],
+      "test_metadata": {
+        "kwargs": {
+          "column_name": "email",
+          "model": "{{ get_where_subquery(ref('monthly_billing_with_cust')) }}"
+        },
+        "name": "not_null",
+        "namespace": null
+      },
+      "unique_id": "test.sample_dbt.not_null_monthly_billing_with_cust_email.d405c2cc13",
+      "unrendered_config": {}
+    },
+    "test.sample_dbt.relationships_monthly_billing_with_cust_customer_id__customer_id__ref_customer_details_.653e08a90b": {
+      "alias": "relationships_monthly_billing__817cd169359f6f89fd618645234f8ff3",
+      "build_path": "target/run/sample_dbt/models/base.yml/relationships_monthly_billing__817cd169359f6f89fd618645234f8ff3.sql",
+      "checksum": {
+        "checksum": "",
+        "name": "none"
+      },
+      "column_name": "customer_id",
+      "columns": {},
+      "compiled": true,
+      "compiled_code": "\n    \n    \n\nwith  __dbt__cte__customer_details as (\n\n\nSELECT\n    c.customer_id,\n    c.first_name || ' ' || c.last_name as \"full_name\",\n    (\n        select cs.first_name || ' ' || cs.last_name\n        from \"pagila\".\"public\".\"customer_snapshot\" cs where cs.customer_id = c.customer_id\n        order by dbt_valid_from desc\n        limit 1\n    ) as \"initial_full_name\",\n    c.email,\n    a.address,\n    m.city,\n    a.postal_code,\n    a.phone\nFROM\n    \"pagila\".\"public\".\"customer\" c\n    left outer join \"pagila\".\"public\".\"address\" a on c.address_id = a.address_id\n    left outer join \"pagila\".\"public\".\"city\" m on a.city_id = m.city_id\n),child as (\n    select customer_id as from_field\n    from \"pagila\".\"public\".\"an-aliased-view-for-monthly-billing\"\n    where customer_id is not null\n),\n\nparent as (\n    select customer_id as to_field\n    from __dbt__cte__customer_details\n)\n\nselect\n    from_field\n\nfrom child\nleft join parent\n    on child.from_field = parent.to_field\n\nwhere parent.to_field is null\n\n\n",
+      "compiled_path": "target/compiled/sample_dbt/models/base.yml/relationships_monthly_billing__817cd169359f6f89fd618645234f8ff3.sql",
+      "config": {
+        "alias": "relationships_monthly_billing__817cd169359f6f89fd618645234f8ff3",
+        "database": null,
+        "enabled": true,
+        "error_if": "!= 0",
+        "fail_calc": "count(*)",
+        "limit": null,
+        "materialized": "test",
+        "meta": {},
+        "schema": "dbt_test__audit",
+        "severity": "ERROR",
+        "store_failures": null,
+        "tags": [],
+        "warn_if": "!= 0",
+        "where": null
+      },
+      "created_at": 1663278957.5715818,
+      "database": "pagila",
+      "deferred": false,
+      "depends_on": {
+        "macros": [
+          "macro.dbt.test_relationships",
+          "macro.dbt.get_where_subquery",
+          "macro.dbt.should_store_failures",
+          "macro.dbt.statement"
+        ],
+        "nodes": [
+          "model.sample_dbt.customer_details",
+          "model.sample_dbt.monthly_billing_with_cust"
+        ]
+      },
+      "description": "",
+      "docs": {
+        "node_color": null,
+        "show": true
+      },
+      "extra_ctes": [
+        {
+          "id": "model.sample_dbt.customer_details",
+          "sql": " __dbt__cte__customer_details as (\n\n\nSELECT\n    c.customer_id,\n    c.first_name || ' ' || c.last_name as \"full_name\",\n    (\n        select cs.first_name || ' ' || cs.last_name\n        from \"pagila\".\"public\".\"customer_snapshot\" cs where cs.customer_id = c.customer_id\n        order by dbt_valid_from desc\n        limit 1\n    ) as \"initial_full_name\",\n    c.email,\n    a.address,\n    m.city,\n    a.postal_code,\n    a.phone\nFROM\n    \"pagila\".\"public\".\"customer\" c\n    left outer join \"pagila\".\"public\".\"address\" a on c.address_id = a.address_id\n    left outer join \"pagila\".\"public\".\"city\" m on a.city_id = m.city_id\n)"
+        }
+      ],
+      "extra_ctes_injected": true,
+      "file_key_name": "models.monthly_billing_with_cust",
+      "fqn": [
+        "sample_dbt",
+        "relationships_monthly_billing_with_cust_customer_id__customer_id__ref_customer_details_"
+      ],
+      "language": "sql",
+      "meta": {},
+      "metrics": [],
+      "name": "relationships_monthly_billing_with_cust_customer_id__customer_id__ref_customer_details_",
+      "original_file_path": "models/base.yml",
+      "package_name": "sample_dbt",
+      "patch_path": null,
+      "path": "relationships_monthly_billing__817cd169359f6f89fd618645234f8ff3.sql",
+      "raw_code": "{{ test_relationships(**_dbt_generic_test_kwargs) }}{{ config(alias=\"relationships_monthly_billing__817cd169359f6f89fd618645234f8ff3\") }}",
+      "refs": [
+        [
+          "customer_details"
+        ],
+        [
+          "monthly_billing_with_cust"
+        ]
+      ],
+      "relation_name": null,
+      "resource_type": "test",
+      "root_path": "/some-path/sample-dbt",
+      "schema": "public_dbt_test__audit",
+      "sources": [],
+      "tags": [],
+      "test_metadata": {
+        "kwargs": {
+          "column_name": "customer_id",
+          "field": "customer_id",
+          "model": "{{ get_where_subquery(ref('monthly_billing_with_cust')) }}",
+          "to": "ref('customer_details')"
+        },
+        "name": "relationships",
+        "namespace": null
+      },
+      "unique_id": "test.sample_dbt.relationships_monthly_billing_with_cust_customer_id__customer_id__ref_customer_details_.653e08a90b",
+      "unrendered_config": {
+        "alias": "relationships_monthly_billing__817cd169359f6f89fd618645234f8ff3"
+      }
+    },
+    "test.sample_dbt.source_not_null_pagila_actor_actor_id.ad63829d3e": {
+      "alias": "source_not_null_pagila_actor_actor_id",
+      "build_path": "target/run/sample_dbt/models/base.yml/source_not_null_pagila_actor_actor_id.sql",
+      "checksum": {
+        "checksum": "",
+        "name": "none"
+      },
+      "column_name": "actor_id",
+      "columns": {},
+      "compiled": true,
+      "compiled_code": "\n    \n    \n\n\n\nselect actor_id\nfrom \"pagila\".\"public\".\"actor\"\nwhere actor_id is null\n\n\n",
+      "compiled_path": "target/compiled/sample_dbt/models/base.yml/source_not_null_pagila_actor_actor_id.sql",
+      "config": {
+        "alias": null,
+        "database": null,
+        "enabled": true,
+        "error_if": "!= 0",
+        "fail_calc": "count(*)",
+        "limit": null,
+        "materialized": "test",
+        "meta": {},
+        "schema": "dbt_test__audit",
+        "severity": "ERROR",
+        "store_failures": null,
+        "tags": [],
+        "warn_if": "!= 0",
+        "where": null
+      },
+      "created_at": 1663278957.5715818,
+      "database": "pagila",
+      "deferred": false,
+      "depends_on": {
+        "macros": [
+          "macro.dbt.test_not_null",
+          "macro.dbt.get_where_subquery",
+          "macro.dbt.should_store_failures",
+          "macro.dbt.statement"
+        ],
+        "nodes": [
+          "source.sample_dbt.pagila.actor"
+        ]
+      },
+      "description": "",
+      "docs": {
+        "node_color": null,
+        "show": true
+      },
+      "extra_ctes": [],
+      "extra_ctes_injected": true,
+      "file_key_name": "sources.pagila",
+      "fqn": [
+        "sample_dbt",
+        "source_not_null_pagila_actor_actor_id"
+      ],
+      "language": "sql",
+      "meta": {},
+      "metrics": [],
+      "name": "source_not_null_pagila_actor_actor_id",
+      "original_file_path": "models/base.yml",
+      "package_name": "sample_dbt",
+      "patch_path": null,
+      "path": "source_not_null_pagila_actor_actor_id.sql",
+      "raw_code": "{{ test_not_null(**_dbt_generic_test_kwargs) }}",
+      "refs": [],
+      "relation_name": null,
+      "resource_type": "test",
+      "root_path": "/some-path/sample-dbt",
+      "schema": "public_dbt_test__audit",
+      "sources": [
+        [
+          "pagila",
+          "actor"
+        ]
+      ],
+      "tags": [],
+      "test_metadata": {
+        "kwargs": {
+          "column_name": "actor_id",
+          "model": "{{ get_where_subquery(source('pagila', 'actor')) }}"
+        },
+        "name": "not_null",
+        "namespace": null
+      },
+      "unique_id": "test.sample_dbt.source_not_null_pagila_actor_actor_id.ad63829d3e",
+      "unrendered_config": {}
+    },
+    "test.sample_dbt.source_unique_pagila_actor_actor_id.76aff1935a": {
+      "alias": "source_unique_pagila_actor_actor_id",
+      "build_path": "target/run/sample_dbt/models/base.yml/source_unique_pagila_actor_actor_id.sql",
+      "checksum": {
+        "checksum": "",
+        "name": "none"
+      },
+      "column_name": "actor_id",
+      "columns": {},
+      "compiled": true,
+      "compiled_code": "\n    \n    \n\nselect\n    actor_id as unique_field,\n    count(*) as n_records\n\nfrom \"pagila\".\"public\".\"actor\"\nwhere actor_id is not null\ngroup by actor_id\nhaving count(*) > 1\n\n\n",
+      "compiled_path": "target/compiled/sample_dbt/models/base.yml/source_unique_pagila_actor_actor_id.sql",
+      "config": {
+        "alias": null,
+        "database": null,
+        "enabled": true,
+        "error_if": "!= 0",
+        "fail_calc": "count(*)",
+        "limit": null,
+        "materialized": "test",
+        "meta": {},
+        "schema": "dbt_test__audit",
+        "severity": "ERROR",
+        "store_failures": null,
+        "tags": [],
+        "warn_if": "!= 0",
+        "where": null
+      },
+      "created_at": 1663278957.5715818,
+      "database": "pagila",
+      "deferred": false,
+      "depends_on": {
+        "macros": [
+          "macro.dbt.test_unique",
+          "macro.dbt.get_where_subquery",
+          "macro.dbt.should_store_failures",
+          "macro.dbt.statement"
+        ],
+        "nodes": [
+          "source.sample_dbt.pagila.actor"
+        ]
+      },
+      "description": "",
+      "docs": {
+        "node_color": null,
+        "show": true
+      },
+      "extra_ctes": [],
+      "extra_ctes_injected": true,
+      "file_key_name": "sources.pagila",
+      "fqn": [
+        "sample_dbt",
+        "source_unique_pagila_actor_actor_id"
+      ],
+      "language": "sql",
+      "meta": {},
+      "metrics": [],
+      "name": "source_unique_pagila_actor_actor_id",
+      "original_file_path": "models/base.yml",
+      "package_name": "sample_dbt",
+      "patch_path": null,
+      "path": "source_unique_pagila_actor_actor_id.sql",
+      "raw_code": "{{ test_unique(**_dbt_generic_test_kwargs) }}",
+      "refs": [],
+      "relation_name": null,
+      "resource_type": "test",
+      "root_path": "/some-path/sample-dbt",
+      "schema": "public_dbt_test__audit",
+      "sources": [
+        [
+          "pagila",
+          "actor"
+        ]
+      ],
+      "tags": [],
+      "test_metadata": {
+        "kwargs": {
+          "column_name": "actor_id",
+          "model": "{{ get_where_subquery(source('pagila', 'actor')) }}"
+        },
+        "name": "unique",
+        "namespace": null
+      },
+      "unique_id": "test.sample_dbt.source_unique_pagila_actor_actor_id.76aff1935a",
+      "unrendered_config": {}
     }
   },
   "parent_map": {
     "model.sample_dbt.customer_details": [
+      "snapshot.sample_dbt.customer_snapshot",
       "source.sample_dbt.pagila.address",
       "source.sample_dbt.pagila.city",
       "source.sample_dbt.pagila.customer"
@@ -7911,6 +8701,9 @@
     "model.sample_dbt.payments_by_customer_by_month": [
       "model.sample_dbt.payments_base"
     ],
+    "snapshot.sample_dbt.customer_snapshot": [
+      "source.sample_dbt.pagila.customer"
+    ],
     "source.sample_dbt.pagila.actor": [],
     "source.sample_dbt.pagila.address": [],
     "source.sample_dbt.pagila.category": [],
@@ -7922,12 +8715,42 @@
     "source.sample_dbt.pagila.payment_p2020_03": [],
     "source.sample_dbt.pagila.payment_p2020_04": [],
     "source.sample_dbt.pagila.payment_p2020_05": [],
-    "source.sample_dbt.pagila.payment_p2020_06": []
+    "source.sample_dbt.pagila.payment_p2020_06": [],
+    "test.sample_dbt.assert_source_actor_last_update_is_recent": [
+      "source.sample_dbt.pagila.actor"
+    ],
+    "test.sample_dbt.is_email_monthly_billing_with_cust_email.57a935ce99": [
+      "model.sample_dbt.monthly_billing_with_cust"
+    ],
+    "test.sample_dbt.not_null_monthly_billing_with_cust_billing_month.19ce54289b": [
+      "model.sample_dbt.monthly_billing_with_cust"
+    ],
+    "test.sample_dbt.not_null_monthly_billing_with_cust_email.d405c2cc13": [
+      "model.sample_dbt.monthly_billing_with_cust"
+    ],
+    "test.sample_dbt.relationships_monthly_billing_with_cust_customer_id__customer_id__ref_customer_details_.653e08a90b": [
+      "model.sample_dbt.customer_details",
+      "model.sample_dbt.monthly_billing_with_cust"
+    ],
+    "test.sample_dbt.source_not_null_pagila_actor_actor_id.ad63829d3e": [
+      "source.sample_dbt.pagila.actor"
+    ],
+    "test.sample_dbt.source_unique_pagila_actor_actor_id.76aff1935a": [
+      "source.sample_dbt.pagila.actor"
+    ]
   },
   "selectors": {},
   "sources": {
     "source.sample_dbt.pagila.actor": {
       "columns": {
+        "actor_id": {
+          "data_type": null,
+          "description": "description for actor_id column from dbt",
+          "meta": {},
+          "name": "actor_id",
+          "quote": null,
+          "tags": []
+        },
         "first_name": {
           "data_type": null,
           "description": "description for first_name from dbt",

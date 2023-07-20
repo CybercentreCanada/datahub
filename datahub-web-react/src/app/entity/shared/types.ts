@@ -48,7 +48,7 @@ export type EntityTab = {
 };
 
 export type EntitySidebarSection = {
-    component: React.FunctionComponent<{ properties?: any }>;
+    component: React.FunctionComponent<{ properties?: any; readOnly?: boolean }>;
     display?: {
         visible: (GenericEntityProperties, T) => boolean; // Whether the sidebar is visible on the UI. Defaults to true.
     };
@@ -72,6 +72,7 @@ export type GenericEntityProperties = {
     glossaryTerms?: Maybe<GlossaryTerms>;
     ownership?: Maybe<Ownership>;
     domain?: Maybe<DomainAssociation>;
+    dataProduct?: Maybe<EntityRelationshipsResult>;
     platform?: Maybe<DataPlatform>;
     dataPlatformInstance?: Maybe<DataPlatformInstance>;
     customProperties?: Maybe<CustomPropertiesEntry[]>;
@@ -103,6 +104,7 @@ export type GenericEntityProperties = {
     fineGrainedLineages?: Maybe<FineGrainedLineage[]>;
     privileges?: Maybe<EntityPrivileges>;
     embed?: Maybe<Embed>;
+    exists?: boolean;
 };
 
 export type GenericEntityUpdate = {
@@ -131,11 +133,18 @@ export type EntityContextType = {
     entityType: EntityType;
     dataNotCombinedWithSiblings: any;
     entityData: GenericEntityProperties | null;
+    loading: boolean;
     baseEntity: any;
     updateEntity?: UpdateEntityType<any> | null;
     routeToTab: (params: { tabName: string; tabParams?: Record<string, any>; method?: 'push' | 'replace' }) => void;
     refetch: () => Promise<any>;
     lineage: FetchedEntity | undefined;
+    shouldRefetchEmbeddedListSearch?: boolean;
+    setShouldRefetchEmbeddedListSearch?: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+export type SchemaContextType = {
+    refetch?: () => Promise<any>;
 };
 
 export type RequiredAndNotNull<T> = {
