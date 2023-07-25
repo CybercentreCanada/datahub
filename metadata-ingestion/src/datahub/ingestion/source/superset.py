@@ -88,10 +88,11 @@ class SupersetConfig(StatefulIngestionConfigBase, ConfigModel):
         default=None, description="Superset Stateful Ingestion Config."
     )
 
-    
     # Custom CCCS field
-    access_token: Optional[str] = Field(default=None, description="Superset Access Token.")
-    
+    access_token: Optional[str] = Field(
+        default=None, description="Superset Access Token."
+    )
+
     provider: str = Field(default="db", description="Superset provider.")
     options: Dict = Field(default={}, description="")
     env: str = Field(
@@ -173,7 +174,11 @@ class SupersetSource(StatefulIngestionSourceBase):
                 "Accept": "application/json",
                 "Content-Type": "application/json",
             }
-            login_data = {"provider": "oauth", "oauth_provider": "azure", "refresh": True}
+            login_data = {
+                "provider": "oauth",
+                "oauth_provider": "azure",
+                "refresh": True,
+            }
 
             login_response = requests.post(
                 f"{self.config.connect_uri}/api/v1/security/login",
