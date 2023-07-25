@@ -24,7 +24,9 @@ pip install --upgrade pip wheel setuptools
 pip install -r requirements.txt
 
 cd ../metadata-ingestion
+./scripts/install_deps.sh
 pip install -e '.[dev]'
+pip install -e '.[integration-tests]'
 ```
 2) Once the `venv` has been created in the `/datahub/smoke-test` directory, exit the virtual environment by using the `deactivate` command, and then traverse to the `/datahub` directory. Next, you need to build the front-end, back-end and cli tool:
 ```shell
@@ -34,4 +36,4 @@ pip install -e '.[dev]'
 ```
 3) You can now re-enter the virtual envrionment in the `/datahub/smoke-test` directory
 4) Create a file called `.env` in `/workspace/scratch/datahub/` and add any environment variables you need for the recipe to it. Write them in key value pairs (e.g., `GMS_TOKEN=XXXXXX`).
-5) Once the commands listed above have been entered, you can open a recipe that uses a source you would like to debug and then press the `Start Debugging` button beside the `Datahub Ingest` debug configuration (don't forget to put a breakpoint in the ingestion source you want to debug). 
+5) Once the commands listed above have been entered, you can open a recipe that uses a source you would like to debug and then press the `Start Debugging` button beside the `Datahub Ingest` debug configuration (don't forget to put a breakpoint in the ingestion source you want to debug).
