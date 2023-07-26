@@ -210,6 +210,7 @@ iceberg_common = {
     # Iceberg Python SDK
     "fsspec[abfs]==2023.1.0",
     "pyiceberg[adlfs,s3fs]==0.3.0",
+    "azure-identity==1.10.0",
 }
 
 s3_base = {
