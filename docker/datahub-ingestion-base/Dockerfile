@@ -9,6 +9,7 @@ WORKDIR /go/src/github.com/jwilder/dockerize
 
 RUN go install github.com/jwilder/dockerize@$DOCKERIZE_VERSION
 
+# CCCS Modification (was originally `FROM python:3.10 as base`)
 FROM python:3.10-bullseye as base
 
 ENV LIBRDKAFKA_VERSION=1.6.2
