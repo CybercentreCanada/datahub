@@ -44,11 +44,8 @@ class AdlsSourceConfig(ConfigModel):
         default=None,
     )
 
-    def strltrim(to_trim: str, prefix: str) -> str:
-        return to_trim[len(prefix) :] if to_trim.startswith(prefix) else to_trim
-
     def get_abfss_url(self, folder_path: str = "") -> str:
-        return f"abfss://{self.container_name}@{self.account_name}.dfs.core.windows.net{self.strltrim(folder_path, self.container_name)}"
+        return f"abfss://{self.container_name}@{self.account_name}.dfs.core.windows.net{strltrim(folder_path, self.container_name)}"
 
     @root_validator()
     def _check_credential_values(cls, values: Dict) -> Dict:
@@ -65,3 +62,7 @@ class AdlsSourceConfig(ConfigModel):
         raise ConfigurationError(
             "credentials missing, requires one combination of account_key or sas_token or (client_id and client_secret and tenant_id)"
         )
+
+
+def strltrim(to_trim: str, prefix: str) -> str:
+    return to_trim[len(prefix) :] if to_trim.startswith(prefix) else to_trim
