@@ -26,6 +26,10 @@ steps:
       echo "##vso[task.setvariable variable=BRANCH_NAME]$BRANCH_NAME"
     displayName: Parse Source Control Branch Name
   - bash: |
+      ./gradlew :datahub-upgrade:build -x test --parallel
+      cp ./datahub-upgrade/build/libs/datahub-upgrade.jar .
+    displayName: Pre-build artifacts for docker image
+  - bash: |
       ./gradlew :metadata-service:war:build -x test --parallel
       cp ./metadata-service/war/build/libs/war.war .
     displayName: Build Datahub's backend GMS
