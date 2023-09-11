@@ -1,11 +1,17 @@
+import sys
+
+if sys.version_info < (3, 8):
+    raise ImportError("Iceberg is only supported on Python 3.8+")
+
 import json
 import logging
 import uuid
 from typing import Any, Dict, Iterable, List, Optional
 
-from pyiceberg.exceptions import NoSuchIcebergTableError
+from pyiceberg.catalog import Catalog
 from pyiceberg.schema import Schema, SchemaVisitorPerPrimitiveType, visit
 from pyiceberg.table import Table
+from pyiceberg.typedef import Identifier
 from pyiceberg.types import (
     BinaryType,
     BooleanType,
@@ -76,23 +82,13 @@ from datahub.metadata.schema_classes import (
 
 LOGGER = logging.getLogger(__name__)
 
-_all_atomic_types = {
-    BooleanType: "boolean",
-    IntegerType: "int",
-    LongType: "long",
-    FloatType: "float",
-    DoubleType: "double",
-    BinaryType: "bytes",
-    StringType: "string",
-}
-
 
 @platform_name("Iceberg")
 @support_status(SupportStatus.TESTING)
 @config_class(IcebergSourceConfig)
 @capability(
     SourceCapability.PLATFORM_INSTANCE,
-    "Optionally enabled via configuration, an Iceberg instance represents the datalake name where the table is stored.",
+    "Optionally enabled via configuration, an Iceberg instance represents the catalog name where the table is stored.",
 )
 @capability(SourceCapability.DOMAINS, "Currently not supported.", supported=False)
 @capability(SourceCapability.DATA_PROFILING, "Optionally enabled via configuration.")
@@ -112,16 +108,7 @@ class IcebergSource(StatefulIngestionSourceBase):
     The DataHub Iceberg source plugin extracts metadata from [Iceberg tables](https://iceberg.apache.org/spec/) stored in a distributed or local file system.
     Typically, Iceberg tables are stored in a distributed file system like S3 or Azure Data Lake Storage (ADLS) and registered in a catalog.  There are various catalog
     implementations like Filesystem-based, RDBMS-based or even REST-based catalogs.  This Iceberg source plugin relies on the
-    [pyiceberg library](https://py.iceberg.apache.org/) and its support for catalogs is limited at the moment.
-    A new version of pyiceberg is currently in development and should fix this.
-    Because of this limitation, this source plugin **will only ingest HadoopCatalog-based tables that have a `version-hint.text` metadata file**.
-
-    Ingestion of tables happens in 2 steps:
-    1. Discover Iceberg tables stored in file system.
-    2. Load discovered tables using pyiceberg.
-
-    The current implementation of the Iceberg source plugin will only discover tables stored in a local file system or in ADLS.  Support for S3 could
-    be added fairly easily.
+    [pyiceberg library](https://py.iceberg.apache.org/).
     """
 
     def __init__(self, config: IcebergSourceConfig, ctx: PipelineContext) -> None:
@@ -143,47 +130,31 @@ class IcebergSource(StatefulIngestionSourceBase):
             ).workunit_processor,
         ]
 
-    def get_workunits_internal(self) -> Iterable[MetadataWorkUnit]:
-        catalog = self.config.get_catalog()
-        datasets = []
-        if catalog:
-            for namespace in catalog.list_namespaces():
-                for tableName in catalog.list_tables(namespace):
-                    dataset_name = ".".join(tableName)
-                    if not self.config.table_pattern.allowed(dataset_name):
-                        # Dataset name is rejected by pattern, report as dropped.
-                        self.report.report_dropped(dataset_name)
-                        continue
-                    else:
-                        datasets.append((tableName, dataset_name))
-        else:
-            # Will be obsolete once HadoopCatalog is supported by PyIceberg, or we migrate to REST catalog
-            for (
-                dataset_path,
-                dataset_name,
-            ) in self.config.get_paths():  # Tuple[str, str]
-                if not self.config.table_pattern.allowed(dataset_name):
-                    # Dataset name is rejected by pattern, report as dropped.
-                    self.report.report_dropped(dataset_name)
-                    continue
-                else:
-                    datasets.append((dataset_path, dataset_name))
+    def _get_datasets(self, catalog: Catalog) -> Iterable[Identifier]:
+        for namespace in catalog.list_namespaces():
+            yield from catalog.list_tables(namespace)
 
-        for dataset_path, dataset_name in datasets:
+    def get_workunits_internal(self) -> Iterable[MetadataWorkUnit]:
+        try:
+            catalog = self.config.get_catalog()
+        except Exception as e:
+            LOGGER.error("Failed to get catalog", exc_info=True)
+            self.report.report_failure(
+                "get-catalog", f"Failed to get catalog {self.config.catalog.name}: {e}"
+            )
+            return
+
+        for dataset_path in self._get_datasets(catalog):
+            dataset_name = ".".join(dataset_path)
+            if not self.config.table_pattern.allowed(dataset_name):
+                # Dataset name is rejected by pattern, report as dropped.
+                self.report.report_dropped(dataset_name)
+                continue
+
             try:
                 # Try to load an Iceberg table.  Might not contain one, this will be caught by NoSuchIcebergTableError.
-                if isinstance(dataset_path, str):
-                    table = self.config.load_table(dataset_name, dataset_path)
-                else:
-                    table = catalog.load_table(dataset_path)
+                table = catalog.load_table(dataset_path)
                 yield from self._create_iceberg_workunit(dataset_name, table)
-            except NoSuchIcebergTableError:
-                # Path did not contain a valid Iceberg table. Silently ignore this.
-                # Once we move to catalogs, this won't be needed.
-                LOGGER.debug(
-                    f"Path {dataset_path} does not contain table {dataset_name}"
-                )
-                pass
             except Exception as e:
                 self.report.report_failure("general", f"Failed to create workunit: {e}")
                 LOGGER.exception(
@@ -209,7 +180,6 @@ class IcebergSource(StatefulIngestionSourceBase):
         custom_properties = table.metadata.properties.copy()
         custom_properties["location"] = table.metadata.location
         custom_properties["format-version"] = str(table.metadata.format_version)
-        custom_properties["partition-spec"] = str(self._get_partition_aspect(table))
         if table.current_snapshot():
             custom_properties["snapshot-id"] = str(table.current_snapshot().snapshot_id)
             custom_properties["manifest-list"] = table.current_snapshot().manifest_list
@@ -235,30 +205,9 @@ class IcebergSource(StatefulIngestionSourceBase):
         if dpi_aspect:
             yield dpi_aspect
 
-        if self.config.profiling.enabled:
+        if self.config.is_profiling_enabled():
             profiler = IcebergProfiler(self.report, self.config.profiling)
             yield from profiler.profile_table(dataset_name, dataset_urn, table)
-
-    def _get_partition_aspect(self, table: Table) -> str:
-        partition_list = []
-
-        for partition in table.spec().fields:
-            partition_object = {}
-
-            partition_object["name"] = str(partition.name)
-            partition_object["transform"] = str(partition.transform)
-            partition_object["source"] = str(
-                table.schema().find_column_name(partition.source_id)
-            )
-            partition_object["source-id"] = partition.source_id
-            partition_object["source-type"] = str(
-                table.schema().find_type(partition.source_id)
-            )
-            partition_object["field-id"] = partition.field_id
-
-            partition_list.append(partition_object)
-
-        return json.dumps(partition_list)
 
     def _get_ownership_aspect(self, table: Table) -> Optional[OwnershipClass]:
         owners = []

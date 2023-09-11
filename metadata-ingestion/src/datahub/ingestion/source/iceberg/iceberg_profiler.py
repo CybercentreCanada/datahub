@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, Iterable, Union, cast
 
 from pyiceberg.conversions import from_bytes
@@ -15,6 +14,12 @@ from pyiceberg.types import (
     TimestampType,
     TimestamptzType,
     TimeType,
+)
+from pyiceberg.utils.datetime import (
+    days_to_date,
+    to_human_time,
+    to_human_timestamp,
+    to_human_timestamptz,
 )
 
 from datahub.emitter.mce_builder import get_sys_time
@@ -55,7 +60,7 @@ class IcebergProfiler:
         schema: Schema,
         aggregator: Callable,
         aggregated_values: Dict[int, Any],
-        manifest_values: Dict[int, Any],
+        manifest_values: Dict[int, bytes],
     ) -> None:
         for field_id, value_encoded in manifest_values.items():  # type: int, Any
             try:
@@ -66,7 +71,7 @@ class IcebergProfiler:
                 continue
             if IcebergProfiler._is_numeric_type(field.field_type):
                 value_decoded = from_bytes(field.field_type, value_encoded)
-                if value_decoded:
+                if value_decoded is not None:
                     agg_value = aggregated_values.get(field_id)
                     aggregated_values[field_id] = (
                         aggregator(agg_value, value_decoded)
@@ -116,9 +121,9 @@ class IcebergProfiler:
         )
         column_count = len(
             [
-                id
-                for id in table.schema().field_ids
-                if table.schema().find_field(id).field_type.is_primitive
+                field.field_id
+                for field in table.schema().fields
+                if field.field_type.is_primitive
             ]
         )
         dataset_profile = DatasetProfileClass(
@@ -175,7 +180,7 @@ class IcebergProfiler:
 
                 if self.config.include_field_min_value:
                     column_profile.min = (
-                        self._renderValue(
+                        self._render_value(
                             dataset_name, field.field_type, min_bounds.get(field_id)
                         )
                         if field_id in min_bounds
@@ -183,7 +188,7 @@ class IcebergProfiler:
                     )
                 if self.config.include_field_max_value:
                     column_profile.max = (
-                        self._renderValue(
+                        self._render_value(
                             dataset_name, field.field_type, max_bounds.get(field_id)
                         )
                         if field_id in max_bounds
@@ -196,24 +201,18 @@ class IcebergProfiler:
             aspect=dataset_profile,
         ).as_workunit()
 
-    def _renderValue(
+    def _render_value(
         self, dataset_name: str, value_type: IcebergType, value: Any
     ) -> Union[str, None]:
         try:
-            if isinstance(value_type, (TimestampType, TimestamptzType)):
-                # if value_type.adjust_to_utc:
-                #     # TODO Deal with utc when required
-                #     microsecond_unix_ts = value
-                # else:
-                #     microsecond_unix_ts = value
-                microsecond_unix_ts = value
-                return datetime.fromtimestamp(microsecond_unix_ts / 1000000.0).strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                )
+            if isinstance(value_type, TimestampType):
+                return to_human_timestamp(value)
+            if isinstance(value_type, TimestamptzType):
+                return to_human_timestamptz(value)
             elif isinstance(value_type, DateType):
-                return (datetime(1970, 1, 1, 0, 0) + timedelta(value - 1)).strftime(
-                    "%Y-%m-%d"
-                )
+                return days_to_date(value).strftime("%Y-%m-%d")
+            elif isinstance(value_type, TimeType):
+                return to_human_time(value)
             return str(value)
         except Exception as e:
             self.report.report_warning(

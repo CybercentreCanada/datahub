@@ -5,7 +5,8 @@ source:
   config:
     catalog:
       name: default
-      conf:
+      type: rest
+      config:
         uri: http://localhost:8181
         s3.access-key-id: admin
         s3.secret-access-key: password

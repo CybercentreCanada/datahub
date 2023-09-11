@@ -1,4 +1,5 @@
 import subprocess
+import sys
 from typing import Any, Dict, List
 from unittest.mock import patch
 
@@ -17,6 +18,12 @@ from tests.test_helpers.state_helpers import (
 FROZEN_TIME = "2020-04-14 07:00:00"
 GMS_PORT = 8080
 GMS_SERVER = f"http://localhost:{GMS_PORT}"
+
+
+@pytest.fixture(autouse=True)
+def skip_tests_if_python_before_3_8():
+    if sys.version_info < (3, 8):
+        pytest.skip("Requires python 3.8 or higher")
 
 
 def spark_submit(file_path: str, args: str = "") -> None:
@@ -75,7 +82,8 @@ def test_iceberg_stateful_ingest(
             "config": {
                 "catalog": {
                     "name": "default",
-                    "conf": {
+                    "type": "rest",
+                    "config": {
                         "uri": "http://localhost:8181",
                         "s3.access-key-id": "admin",
                         "s3.secret-access-key": "password",
@@ -114,7 +122,7 @@ def test_iceberg_stateful_ingest(
     ) as mock_checkpoint:
         wait_for_port(docker_services, "spark-iceberg", 8888, timeout=120)
 
-        # Run the create.py pyspark file to populate the table.
+        # Run the create.py pyspark file to populate two tables.
         spark_submit("/home/iceberg/setup/create.py", "nyc.taxis")
         spark_submit("/home/iceberg/setup/create.py", "nyc.another_taxis")
 
@@ -165,7 +173,6 @@ def test_iceberg_stateful_ingest(
             pipeline=pipeline_run2, expected_providers=1
         )
 
-        # These paths change from one instance run of the clickhouse docker to the other, and the FROZEN_TIME does not apply to these.
         ignore_paths: List[str] = [
             r"root\[\d+\]\['proposedSnapshot'\].+\['aspects'\].+\['customProperties'\]\['created-at'\]",
             r"root\[\d+\]\['proposedSnapshot'\].+\['aspects'\].+\['customProperties'\]\['snapshot-id'\]",

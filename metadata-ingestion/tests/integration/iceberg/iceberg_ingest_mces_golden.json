@@ -17,7 +17,6 @@
                                 "write.format.default": "parquet",
                                 "location": "s3a://warehouse/wh/nyc/taxis",
                                 "format-version": "1",
-                                "partition-spec": "[{\"name\": \"trip_date\", \"transform\": \"identity\", \"source\": \"trip_date\", \"source-id\": 2, \"source-type\": \"timestamptz\", \"field-id\": 1000}]",
                                 "snapshot-id": "2505818429184337337",
                                 "manifest-list": "s3a://warehouse/wh/nyc/taxis/metadata/snap-2505818429184337337-1-a64915c4-afc8-40e3-97a7-98b072b42e10.avro"
                             },
