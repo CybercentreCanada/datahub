@@ -215,7 +215,8 @@ microsoft_common = {"msal==1.22.0"}
 
 iceberg_common = {
     # Iceberg Python SDK
-    "pyiceberg",
+    "pyiceberg[sql-postgres]@git+https://github.com/CybercentreCanada/iceberg.git@feature/CLDN-2347#subdirectory=python",       # CCCS change, return to 'pyiceberg[sql-postgres]' once DataHub supports pydantic 2.*
+    "adlfs",                    # CCCS change
     "pyarrow>=9.0.0, <13.0.0",
 }
 
