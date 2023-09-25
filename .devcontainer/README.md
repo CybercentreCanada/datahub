@@ -15,6 +15,8 @@ This devcontainer is configured to persist its Gradle, Yarn, nvm, etc. caches on
 ## Debugger Setup
 **NOTE**: The venv which you create from following the debugger setup guide can also be used to run datahub ingestion jobs locally. I sourced the commands from two separate guides, [DataHub Developer's Guide](https://github.com/datahub-project/datahub/blob/master/docs/developers.md#deploying-local-versions) and [Developing on Metadata Ingestion](https://github.com/datahub-project/datahub/blob/master/metadata-ingestion/developing.md#testing)
 
+**NOTE**: THE FOLLOWING INSTRUCTIONS WERE CUSTOM MADE FOR THE 'iceberg_jdbc_catalog' BRANCH
+
 In order to make use of the debugger built into the devcontainer, there are a few steps you need to follow:
 1) Once the devcontainer has been built, traverse to the `/datahub/smoke-test` directory. Then, enter the following commands:
 ```shell
@@ -24,16 +26,7 @@ pip install --upgrade pip wheel setuptools
 pip install -r requirements.txt
 
 cd ../metadata-ingestion
-./scripts/install_deps.sh
-pip install -e '.[dev]'
-pip install -e '.[integration-tests]'
+pip install -e '.[iceberg]'
 ```
-2) Once the `venv` has been created in the `/datahub/smoke-test` directory, exit the virtual environment by using the `deactivate` command, and then traverse to the `/datahub` directory. Next, you need to build the front-end, back-end and cli tool:
-```shell
-./gradlew :metadata-service:war:build
-./gradlew :datahub-frontend:dist -x yarnTest -x yarnLint
-./gradlew :metadata-ingestion:installDev
-```
-3) You can now re-enter the virtual envrionment in the `/datahub/smoke-test` directory
-4) Create a file called `.env` in `/workspace/scratch/datahub/` and add any environment variables you need for the recipe to it. Write them in key value pairs (e.g., `GMS_TOKEN=XXXXXX`).
-5) Once the commands listed above have been entered, you can open a recipe that uses a source you would like to debug and then press the `Start Debugging` button beside the `Datahub Ingest` debug configuration (don't forget to put a breakpoint in the ingestion source you want to debug).
+2) Create a file called `.env` in `/workspace/scratch/datahub/` and add any environment variables you need for the recipe to it. Write them in key value pairs (e.g., `GMS_TOKEN=XXXXXX`).
+3) Once the commands listed above have been entered, you can open a recipe that uses a source you would like to debug and then press the `Start Debugging` button beside the `Datahub Ingest` debug configuration (don't forget to put a breakpoint in the ingestion source you want to debug).
