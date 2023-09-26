@@ -81,7 +81,7 @@ from datahub.metadata.schema_classes import (
 )
 
 LOGGER = logging.getLogger(__name__)
-
+logging.disable(logging.INFO)
 
 @platform_name("Iceberg")
 @support_status(SupportStatus.TESTING)
