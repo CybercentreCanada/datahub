@@ -75,6 +75,7 @@ from datahub.metadata.schema_classes import (
 )
 
 LOGGER = logging.getLogger(__name__)
+logging.disable(logging.INFO)
 
 _all_atomic_types = {
     BooleanType: "boolean",
