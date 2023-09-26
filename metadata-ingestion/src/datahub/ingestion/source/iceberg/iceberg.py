@@ -81,7 +81,8 @@ from datahub.metadata.schema_classes import (
 )
 
 LOGGER = logging.getLogger(__name__)
-logging.disable(logging.INFO)
+http_logging_policy_logger = logging.getLogger("azure.core.pipeline.policies.http_logging_policy")  # CCCS Change
+http_logging_policy_logger.setLevel(logging.WARNING)    # CCCS Change
 
 @platform_name("Iceberg")
 @support_status(SupportStatus.TESTING)
