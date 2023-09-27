@@ -81,6 +81,7 @@ from datahub.metadata.schema_classes import (
 )
 
 LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.WARNING)    # CCCS Change
 http_logging_policy_logger = logging.getLogger("azure.core.pipeline.policies.http_logging_policy")  # CCCS Change
 http_logging_policy_logger.setLevel(logging.WARNING)    # CCCS Change
 
