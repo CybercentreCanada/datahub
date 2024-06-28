@@ -29,8 +29,10 @@ ADD ${extraCaCertsDir} /usr/local/share/ca-certificates/
 # ENTRYPOINT [ "/usr/local/share/docker-init.sh" ]
 CMD [ "sleep", "infinity" ]
 
+
 # Install additional OS packages.
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
+    && export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
     && apt-get -y install --no-install-recommends \
     git \
@@ -41,7 +43,6 @@ RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
     libssl-dev \
     nodejs \
     python3-dev \
-    python3-full \
     python3-venv \
     python3-pip \
     vim \
