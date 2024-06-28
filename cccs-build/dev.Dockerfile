@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM ubuntu:24.04
 
 # prepare tools:
 RUN apt-get update
@@ -41,6 +41,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
     libssl-dev \
     nodejs \
     python3-dev \
+    python3-full \
     python3-venv \
     python3-pip \
     vim \
