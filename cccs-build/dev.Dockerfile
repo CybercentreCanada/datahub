@@ -29,9 +29,15 @@ ADD ${extraCaCertsDir} /usr/local/share/ca-certificates/
 # ENTRYPOINT [ "/usr/local/share/docker-init.sh" ]
 CMD [ "sleep", "infinity" ]
 
-
+COPY library-scripts/*.sh /tmp/library-scripts/
 # Install additional OS packages.
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
+RUN apt-get update \
+    && /bin/bash /tmp/library-scripts/common-debian.sh "${INSTALL_ZSH}" "${USERNAME}" "${USER_UID}" "${USER_GID}" "${UPGRADE_PACKAGES}" "true" "true" \
+    # Install code-server
+    && curl -fsSL https://code-server.dev/install.sh | sh \
+    # Clean up
+    && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/library-scripts/ \
+    && curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
     && export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
     && apt-get -y install --no-install-recommends \
@@ -50,6 +56,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/apt
+
 
 RUN python3 -m pip --disable-pip-version-check --no-cache-dir install --upgrade \
     pip \
