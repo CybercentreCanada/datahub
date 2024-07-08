@@ -12,8 +12,8 @@ ARG UPGRADE_PACKAGES="false"
 ARG ENABLE_NONROOT_DOCKER="true"
 
 # Install needed packages and setup non-root user.
-ARG USERNAME=vscode
-ARG USER_UID=1000
+ARG USERNAME=coder
+ARG USER_UID=1001
 ARG USER_GID=$USER_UID
 
 ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64/
@@ -31,8 +31,7 @@ CMD [ "sleep", "infinity" ]
 
 COPY library-scripts/*.sh /tmp/library-scripts/
 # Install additional OS packages.
-RUN apt-get update \
-    && /bin/bash /tmp/library-scripts/common-debian.sh "${INSTALL_ZSH}" "${USERNAME}" "${USER_UID}" "${USER_GID}" "${UPGRADE_PACKAGES}" "true" "true" \
+RUN useradd -s /bin/bash --uid $USER_UID --gid $USERNAME -m $USERNAME \
     # Install code-server
     && curl -fsSL https://code-server.dev/install.sh | sh \
     # Clean up
