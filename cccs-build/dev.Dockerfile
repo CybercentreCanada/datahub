@@ -7,7 +7,7 @@ RUN apt-get install wget -y
 # [Option] Install zsh
 ARG INSTALL_ZSH="false"
 # [Option] Upgrade OS packages to their latest versions
-ARG UPGRADE_PACKAGES="true"
+ARG UPGRADE_PACKAGES="false"
 # [Option] Enable non-root Docker access in container
 ARG ENABLE_NONROOT_DOCKER="true"
 
