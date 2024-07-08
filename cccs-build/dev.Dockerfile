@@ -2,7 +2,7 @@ FROM ubuntu:22.04
 
 # prepare tools:
 RUN apt-get update
-RUN apt-get install wget -y
+RUN apt-get install wget curl -y
 
 # [Option] Install zsh
 ARG INSTALL_ZSH="false"
