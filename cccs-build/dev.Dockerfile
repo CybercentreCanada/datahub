@@ -31,7 +31,8 @@ CMD [ "sleep", "infinity" ]
 
 COPY library-scripts/*.sh /tmp/library-scripts/
 # Install additional OS packages.
-RUN useradd -s /bin/bash --uid $USER_UID --gid $USERNAME -m $USERNAME \
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd -s /bin/bash --uid $USER_UID --gid $USERNAME -m $USERNAME \
     # Install code-server
     && curl -fsSL https://code-server.dev/install.sh | sh \
     # Clean up
