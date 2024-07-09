@@ -59,7 +59,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && rm -rf /var/cache/apt \
     # Set up USER with passwordless sudo
     && usermod -a -G sudo ${USERNAME} \
-    && mkdir /etc/sudoers.d/${USERNAME} \
+    && mkdir /etc/sudoers.d \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >/etc/sudoers.d/${USERNAME} \
     && chmod 0440 /etc/sudoers.d/${USERNAME}
 
