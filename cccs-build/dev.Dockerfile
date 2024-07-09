@@ -56,7 +56,11 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && apt-get autoremove -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /var/cache/apt
+    && rm -rf /var/cache/apt \
+    # Set up USER with passwordless sudo
+    && usermod -a -G sudo ${USERNAME} \
+    && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >/etc/sudoers.d/${USERNAME} \
+    && chmod 0440 /etc/sudoers.d/${USERNAME}
 
 
 RUN python3 -m pip --disable-pip-version-check --no-cache-dir install --upgrade \
