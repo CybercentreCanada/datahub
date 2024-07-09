@@ -16,7 +16,7 @@ ARG USERNAME=coder
 ARG USER_UID=1001
 ARG USER_GID=$USER_UID
 
-ENV JAVA_HOME /usr/lib/jvm/java-17-openjdk-amd64/
+ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64/
 RUN export JAVA_HOME
 
 # Add custom CA certs
@@ -43,7 +43,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && apt-get -y install --no-install-recommends \
     openssh-client \
     git \
-    openjdk-17-jdk \
+    openjdk-11-jdk \
     bash-completion \
     libsasl2-dev \
     libldap2-dev \
