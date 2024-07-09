@@ -2,7 +2,7 @@ FROM ubuntu:22.04
 
 # prepare tools:
 RUN apt-get update
-RUN apt-get install wget curl -y
+RUN apt-get install wget curl sudo -y
 
 # [Option] Install zsh
 ARG INSTALL_ZSH="false"
@@ -59,6 +59,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && rm -rf /var/cache/apt \
     # Set up USER with passwordless sudo
     && usermod -a -G sudo ${USERNAME} \
+    && mkdir /etc/sudoers.d/${USERNAME} \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >/etc/sudoers.d/${USERNAME} \
     && chmod 0440 /etc/sudoers.d/${USERNAME}
 
