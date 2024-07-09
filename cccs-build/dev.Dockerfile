@@ -52,6 +52,8 @@ RUN groupadd --gid $USER_GID $USERNAME \
     python3-dev \
     python3-venv \
     python3-pip \
+    krb5-config \
+    build-essential \
     vim \
     && apt-get autoremove -y \
     && apt-get clean -y \
@@ -61,7 +63,6 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && usermod -a -G sudo ${USERNAME} \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
     && chmod 0440 /etc/sudoers.d/${USERNAME}
-
 
 RUN python3 -m pip --disable-pip-version-check --no-cache-dir install --upgrade \
     pip \
